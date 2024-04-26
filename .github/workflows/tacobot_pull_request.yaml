@@ -1,5 +1,8 @@
 name: TacoBot
 
+permissions:
+  contents: read
+
 on:
   pull_request:
     types: [opened, edited, synchronize]
@@ -10,8 +13,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Debug Directory
-        run: ls
       - name: Run TacoBot
         uses: ./
         with:
