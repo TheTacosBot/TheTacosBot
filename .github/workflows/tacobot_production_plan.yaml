@@ -3,6 +3,9 @@ name: Terraform Production Plan
 on:
   workflow_dispatch:
     inputs:
+      name:
+        description: 'Name of the TacoBot Project'
+        required: true
       dir:
         description: 'Directory to run Terraform'
         required: true
