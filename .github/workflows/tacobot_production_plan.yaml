@@ -9,6 +9,9 @@ on:
       dir:
         description: 'Directory to run Terraform'
         required: true
+      workflow:
+        description: 'TacoBot Workflow'
+        required: false
       terraform_version:
         description: 'Terraform Version'
         default: "1.1.7"
