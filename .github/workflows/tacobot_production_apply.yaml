@@ -1,0 +1,22 @@
+name: Terraform Production Apply
+
+on:
+  workflow_dispatch:
+    inputs:
+      terraform_version:
+        description: 'Terraform Version'
+        default: "1.1.7"
+
+jobs:
+  apply_terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ github.event.inputs.terraform_version }}
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Terraform Init
+        run: terraform init
+      - name: Terraform Apply
+        run: terraform apply -auto-approve

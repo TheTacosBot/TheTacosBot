@@ -1,0 +1,16 @@
+# action.yml
+name: 'TacoBot'
+description: 'GitOps Driven Terraform Automation'
+inputs:
+  config_file:
+    description: "Pull Request Comment to perform Terrahaxs Command"
+    required: true
+  taco_type:
+    description: "Type of TACO workflow"
+    required: true
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    GITHUB_EVENT_NAME: ${{ github.event_name }}
+    CONFIG_FILE: ${{ inputs.config_file }}

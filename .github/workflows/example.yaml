@@ -1,0 +1,81 @@
+name: Terrahaxs
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: read
+  issues: write
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+  check_run:
+    types: [requested_action, rerequested]
+  issue_comment:
+    types: [created, edited]
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Name of the TacoBot Project'
+        required: true
+      directory:
+        description: 'Directory to run Terraform'
+        required: true
+      workspace:
+        description: 'Workspace to run Terraform'
+        default: 'default'
+      action:
+        required: true
+        description: Which Terraform Action to Perform
+        options:
+          - plan
+          - apply
+      terraform_version:
+        required: true
+        description: Terraform Version
+        default: "1.1.7"
+jobs:
+  orchestrate:
+    if: github.event_name == 'pull_request' || github.event_name == 'check_run'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Terrahaxs
+        uses: ./action
+        with:
+          command: ${{ github.event_name == 'pull_request' && github.event.action == 'opened' && 'plan' || 'apply' }}
+          taco_type: atlantis
+  plan_terraform:
+    if: github.event_name == 'workflow_dispatch' and github.event.inputs.action == 'plan'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ github.events.inputs.terraform_version }}
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Terraform Init
+        run: terraform init
+      - name: Terraform Plan
+        run: terraform plan -o plan.out
+      - name: Archive plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: plan
+          path: |
+            plan.out
+  apply_terraform:
+    if: github.event_name == 'workflow_dispatch' and github.event.inputs.action == 'apply'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ github.events.inputs.terraform_version }}
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Terraform Init
+        run: terraform init
+      - name: Terraform Apply
+        run: terraform apply -auto-approve plan.out 
+  

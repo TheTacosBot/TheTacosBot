@@ -1,0 +1,27 @@
+name: Terraform Production Plan
+
+on:
+  workflow_dispatch:
+    inputs:
+      directory:
+        description: 'Directory to run Terraform'
+        required: true
+      terraform_version:
+        description: 'Terraform Version'
+        default: "1.1.7"
+
+jobs:
+  apply_terraform:
+    runs-on: ubuntu-latest
+    steps:
+      #- uses: hashicorp/setup-terraform@v3
+      #  with:
+      #    terraform_version: ${{ github.event.inputs.terraform_version }}
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Terraform Init
+        working-directory: ${{ github.event.inputs.directory }}
+        run: terraform init
+      - name: Terraform Plan
+        working-directory: ${{ github.event.inputs.directory }}
+        run: terraform plan

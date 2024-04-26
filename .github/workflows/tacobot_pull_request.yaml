@@ -1,0 +1,17 @@
+name: TacoBot
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Run TacoBot
+        uses: ./action
+        with:
+          taco_type: atlantis
+          config_file: .tacobot.yaml
