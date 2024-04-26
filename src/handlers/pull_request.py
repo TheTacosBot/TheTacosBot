@@ -25,5 +25,5 @@ def pull_request_handler(config):
                 }
             }
         )
-
+        print(resp.json())
         resp.raise_for_status()
