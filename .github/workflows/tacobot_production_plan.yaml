@@ -3,7 +3,7 @@ name: Terraform Production Plan
 on:
   workflow_dispatch:
     inputs:
-      directory:
+      dir:
         description: 'Directory to run Terraform'
         required: true
       terraform_version:
@@ -20,8 +20,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Terraform Init
-        working-directory: ${{ github.event.inputs.directory }}
+        working-directory: ${{ github.event.inputs.dir }}
         run: terraform init
       - name: Terraform Plan
-        working-directory: ${{ github.event.inputs.directory }}
+        working-directory: ${{ github.event.inputs.dir }}
         run: terraform plan
