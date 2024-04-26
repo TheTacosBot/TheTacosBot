@@ -13,7 +13,7 @@ jobs:
       - name: Debug Directory
         run: ls
       - name: Run TacoBot
-        uses: ./action
+        uses: ./
         with:
           taco_type: atlantis
           config_file: .tacobot.yaml
