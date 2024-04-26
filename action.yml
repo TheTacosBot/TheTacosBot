@@ -8,6 +8,9 @@ inputs:
   taco_type:
     description: "Type of TACO workflow"
     required: true
+  github_token:
+    description: "GitHub Token"
+    required: true
 runs:
   using: 'docker'
   image: 'Dockerfile'
