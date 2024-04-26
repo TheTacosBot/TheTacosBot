@@ -6,7 +6,7 @@ module "vpc" {
   stage     = "test"
   name      = "app"
 
-  ipv4_primary_cidr_block = "10.0.0.0/16"
+  ipv4_primary_cidr_block = "10.1.0.0/16"
 
   assign_generated_ipv6_cidr_block = false
 }
