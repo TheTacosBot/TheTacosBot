@@ -1,4 +1,4 @@
-FROM 3.9.19-slim
+FROM python:3.9.19-slim
 
 ENV PYTHONUNBUFFERED=1
 COPY requirements.txt .
