@@ -1,8 +1,10 @@
-from src.github import GitHub
+import os
 import requests
+from src.github import GitHub
 
 def pull_request_handler(config):
-    github = GitHub()
+    token = os.environ.get("INPUT_GITHUB_TOKEN")
+    github = GitHub(token)
     files_changed = github.pull_request_files_changed(False)
 
     projects_to_run = config.get_projects_to_run(files_changed)
@@ -11,7 +13,7 @@ def pull_request_handler(config):
 
     # Iterate over the projects and execute them
     for _, project in projects_to_run.items():
-        url = f"https://api.github.com/repos/{self.vcs.org}/{self.vcs.repo}/actions/workflows/{project.workflow}_plan.yaml/dispatches"
+        url = f"https://api.github.com/repos/{github.org}/{github.repo}/actions/workflows/{project.workflow}_plan.yaml/dispatches"
         resp = requests.post(
             url,
             headers=github.request_header,

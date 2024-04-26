@@ -9,7 +9,7 @@ class Config(BaseModel):
     projects: Optional[List[Project]] = Field(
         [],
         description="Lists the projects in this repo.",
-        thx_type='List\[[Project](#project)\]')
+    )
 
     @staticmethod
     def load(path):
@@ -18,14 +18,12 @@ class Config(BaseModel):
 
             with open(path) as stream:
                 loaded_config = yaml.safe_load(stream)
-                logger.debug(f"Loaded: {loaded_config}")
 
             config = Config(**loaded_config)
             return config
 
         except ValidationError as e:
-            logger.error(e)
-            raise InvalidConfiguration(str(e))
+            raise Exception("Invalid configuration")
             
     def get_matching_project(self, project_name):
         """
@@ -63,8 +61,5 @@ class Config(BaseModel):
         projects_to_run = {}
         for config_project in self.projects:
             for project in config_project.regex_projects(list_of_changed_files):
-                if project.should_plan(
-                        list_of_changed_files,
-                        self.repo_location,
-                        False):
-                    projects_to_run[project.name] = project
+                projects_to_run[project.name] = project
+        return projects_to_run

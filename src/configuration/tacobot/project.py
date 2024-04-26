@@ -30,23 +30,3 @@ class Project(BaseModel):
                 p = Project(**d)
                 projects.append(p)
         return projects
-
-    def should_plan(self, files_changed, repo_location, drift_detection):
-        if drift_detection is True:
-            return self.drift_detection_enabled
-
-        return self.autoplan.enabled is True and self._has_changed_files(files_changed, repo_location)
-
-    def _has_changed_files(self, files_changed, repo_location):
-        watched_files = self._files_matching_glob_expression(repo_location)
-        watched_files_changed = [file for file in files_changed if file in watched_files]
-        logger.debug(watched_files_changed)
-        return len(watched_files_changed) > 0
-
-    def _files_matching_glob_expression(self, repo_location):
-        files = []
-        for glob_pattern in self.autoplan.when_modified:
-            files += glob.glob(pathname=f"{repo_location}/{self.dir}/{glob_pattern}",
-                            recursive=True)
-
-        return [file.replace(f"{repo_location}/", "").replace("./", "") for file in files]
