@@ -2,7 +2,6 @@ import re
 import glob
 import os
 from pydantic import BaseModel, Field
-from src.logger import logger
 
 class Project(BaseModel):
     dir: str = Field(

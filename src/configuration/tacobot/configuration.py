@@ -3,9 +3,7 @@ import re
 import copy
 from pydantic import BaseModel, ValidationError, Field
 from typing import Optional, List
-from src.configuration.atlantis.project import Project
-from src.logger import logger
-from src.exceptions import InvalidConfiguration
+from src.configuration.tacobot.project import Project
 
 class Config(BaseModel):
     projects: Optional[List[Project]] = Field(

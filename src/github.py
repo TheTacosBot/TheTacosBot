@@ -1,18 +1,12 @@
-import hashlib
-from hmac import HMAC
 import os
 import requests
 import time
 from datetime import datetime
 import subprocess
-from src.settings import settings
-from src.logger import logger
-from src.models import WorkerRequest, VCSStatus
-from src.comment_command import CommentCommand
 
 token_cache = {}
 
-class GitHubVCS:
+class GitHub:
     name = 'github'
     max_output_text_size = 65535
 
@@ -38,40 +32,6 @@ class GitHubVCS:
         self.event_body = event_body
         self.event = event
 
-    @staticmethod
-    def from_worker_request(request: WorkerRequest):
-        # model after PR
-        return GitHubVCS(
-            event_body={
-                'check_run': {
-                    'id': request.check_run_id,
-                    'name': request.project_name
-                },
-                'pull_request': {
-                    'number': request.pull_request_number,
-                    'branch': request.branch,
-                    'head': {
-                        'sha': request.head_sha,
-                        'ref': request.branch
-                    }
-                },
-                'repository': {
-                    'name': request.repo,
-                    'owner': {
-                        'login': request.org
-                    }
-                },
-                'installation': {
-                    'id': request.installation_id
-                }
-            },
-            event='pull_request'
-        )
-
-    def validate_request(self, header_signature, byte_body):
-        signature = GitHubVCS.generate_signature_from_body(byte_body)
-
-        return signature == header_signature
 
     @property
     def action(self):
@@ -184,30 +144,6 @@ class GitHubVCS:
 
         resp.raise_for_status()
         return resp.json()['id']
-
-    def update_status(self, status: VCSStatus, actions=None):
-        payload = {
-            "completed_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "status": "completed",
-            "conclusion": status.conclusion,
-            "output": {
-                "title": status.title,
-                "summary": status.summary,
-                "text": status.text
-            }
-        }
-
-        if actions is not None:
-            payload['actions'] = actions
-
-        logger.debug(f"Updating status https://api.github.com/repos/{self.org}/{self.repo}/check-runs/{self.check_run_id}")
-        resp = requests.patch(
-            f"https://api.github.com/repos/{self.org}/{self.repo}/check-runs/{self.check_run_id}",
-            headers=self.request_header,
-            json=payload
-        )
-
-        resp.raise_for_status()
 
     def get_check_run(self):
         logger.debug(f"Getting check run https://api.github.com/repos/{self.org}/{self.repo}/check-runs/{self.check_run_id}")
