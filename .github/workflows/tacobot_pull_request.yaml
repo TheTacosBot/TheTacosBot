@@ -17,3 +17,4 @@ jobs:
         with:
           taco_type: atlantis
           config_file: .tacobot.yaml
+          github_token: ${{ github.token }}

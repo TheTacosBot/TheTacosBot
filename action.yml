@@ -11,6 +11,3 @@ inputs:
 runs:
   using: 'docker'
   image: 'Dockerfile'
-  env:
-    GITHUB_EVENT_NAME: ${{ github.event_name }}
-    CONFIG_FILE: ${{ inputs.config_file }}

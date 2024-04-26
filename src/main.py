@@ -3,6 +3,7 @@ from src.handlers.pull_request import pull_request_handler
 from src.configuration.tacobot.configuration import Config
 
 if __name__ == "__main__":
+    print(os.environ)
     event = os.environ.get("GITHUB_EVENT_NAME")
     config = Config.load(os.environ.get("GITHUB_WORKSPACE"))
 
