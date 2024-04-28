@@ -1,5 +1,10 @@
 name: Terraform Apply - Production
 
+permissions:
+  contents: read
+  id-token: write
+  issues: read
+
 on:
   issue_comment:                                     
     types: [created]
