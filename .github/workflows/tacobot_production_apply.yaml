@@ -7,10 +7,11 @@ permissions:
 
 on:
   issue_comment:                                     
-    types: [created]
+    types: [created, edited, deleted]
 
 jobs:
   apply_terraform:
+    if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     steps:
       - name: Extract project directory
