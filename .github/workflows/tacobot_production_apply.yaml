@@ -5,6 +5,7 @@ permissions:
   id-token: write
   issues: read
   actions: read
+  pull-requests: read
 
 on:
   issue_comment:                                     
