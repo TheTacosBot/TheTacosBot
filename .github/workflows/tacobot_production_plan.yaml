@@ -41,7 +41,7 @@ jobs:
         run: terraform init
       - name: Terraform Plan
         working-directory: ${{ github.event.inputs.dir }}
-        run: terraform plan -detailed-exitcode -out=${{ inputs.name }}
+        run: terraform plan -out=${{ inputs.name }}
       - name: Save Plan
         uses: actions/upload-artifact@v4
         with:
