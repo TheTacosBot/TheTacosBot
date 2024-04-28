@@ -34,7 +34,7 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::809929912595:role/GitHubActionRole
           role-session-name: tacobot
-          aws-region: us-east-1
+          aws-region: us-west-2
       - name: Terraform Init
         working-directory: ${{ github.event.inputs.dir }}
         run: terraform init
