@@ -32,7 +32,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v3
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::809929912595:role/GitHubActionRole
           role-session-name: tacobot
@@ -72,4 +72,4 @@ jobs:
             -f environment="${{ github.event.inputs.name }}" \
             -f description="Planned project ${{ github.event.inputs.name }}" \
             -F auto_merge=false \
-            -F required_contexts[]=
+            -F required_contexts[]=null
