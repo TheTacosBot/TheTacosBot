@@ -2,6 +2,7 @@ name: Terraform Production Plan
 
 permissions:
   id-token: write
+  contents: read
 
 on:
   workflow_dispatch:
