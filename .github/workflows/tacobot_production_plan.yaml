@@ -1,5 +1,8 @@
 name: Terraform Production Plan
 
+permissions:
+  id-token: write
+
 on:
   workflow_dispatch:
     inputs:
@@ -25,6 +28,12 @@ jobs:
       #    terraform_version: ${{ github.event.inputs.terraform_version }}
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::809929912595:role/GitHubActionRole
+          role-session-name: tacobot
+          aws-region: us-east-1
       - name: Terraform Init
         working-directory: ${{ github.event.inputs.dir }}
         run: terraform init
