@@ -57,6 +57,11 @@ jobs:
           name: ${{ steps.get-directory.outputs.project_name }}
           path: ${{ steps.get-directory.outputs.project_dir }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Debug
+        run: |
+          ls -al
+          ls -al ${{ steps.get-directory.outputs.project_dir }}
+          cat ${{ steps.get-directory.outputs.project_dir }}/full_plan_output
       - name: Terraform Init
         working-directory: ${{ steps.get-directory.outputs.project_dir }}
         run: terraform init
