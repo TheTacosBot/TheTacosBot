@@ -29,6 +29,8 @@ jobs:
           echo "::set-output name=project_dir::$PROJECT_DIR"
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.issue.pull_request.head.sha }}
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
