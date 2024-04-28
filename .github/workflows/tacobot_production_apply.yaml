@@ -32,9 +32,12 @@ jobs:
           role-to-assume: arn:aws:iam::809929912595:role/GitHubActionRole
           role-session-name: tacobot
           aws-region: us-west-2
-      - name: Download a single artifact
-        uses: actions/download-artifact@v4
+      - name: Download artifact
+        id: download-artifact
+        uses: dawidd6/action-download-artifact@v3
         with:
+          pr: ${{ github.event.issue.pull_request.number }}
+          workflow: ${{ steps.get-directory.outputs.project_name }}_plan.yaml
           name: ${{ steps.get-directory.outputs.project_name }}
           path: ${{ steps.get-directory.outputs.project_dir }}
       - name: Terraform Init
