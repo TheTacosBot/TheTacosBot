@@ -4,6 +4,7 @@ permissions:
   id-token: write
   contents: read
   statuses: write
+  deployments: write
 
 on:
   workflow_dispatch:
