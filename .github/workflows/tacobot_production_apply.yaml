@@ -1,4 +1,4 @@
-name: Terraform Production Apply
+name: Terraform Apply - Production
 
 on:
   issue_comment:                                     
