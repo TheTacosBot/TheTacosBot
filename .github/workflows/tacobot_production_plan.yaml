@@ -41,23 +41,25 @@ jobs:
         run: terraform init
       - name: Terraform Plan
         working-directory: ${{ github.event.inputs.dir }}
-        run: terraform plan -out=${{ inputs.name }}
+        run: terraform plan -out=${{ inputs.name }} > full_plan_output
       - name: Save Plan
         uses: actions/upload-artifact@v4
         with:
-          name: dist-without-markdown
+          name: ${{ inputs.name }}
           path: |
             ${{ github.event.inputs.dir }}/${{ inputs.name }}
       - name: Authenticate GitHub CLI
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
       - name: Create status check
+        working-directory: ${{ github.event.inputs.dir }}
         run: |
-          LOG_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          SUMMARY=$(cat pull_plan_output | grep 'Plan:.*')
+          LOG_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ job.container.id }}"
           POST_BODY='{
             "state": "success",
             "target_url": "'$LOG_URL'",
-            "description": "Check details",
-            "context": "CI/CD Status"
+            "description": "'$SUMMARY'",
+            "context": "${{ inputs.name }}"
           }'
           gh api repos/${{ github.repository }}/statuses/${{ github.sha }} --input - <<< "$POST_BODY"
