@@ -66,4 +66,4 @@ jobs:
         run: |
           pwd
           cd ${{ steps.get-directory.outputs.project_dir }}
-          terraform apply plan -auto-approve
+          terraform apply ${{ steps.get-directory.outputs.project_name}} -auto-approve
