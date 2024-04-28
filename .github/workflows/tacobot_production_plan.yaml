@@ -62,4 +62,6 @@ jobs:
             "description": "'$SUMMARY'",
             "context": "${{ inputs.name }}"
           }'
+          echo "'$SUMMARY'"
+          echo "$POST_BODY"
           gh api repos/${{ github.repository }}/statuses/${{ github.sha }} --input - <<< "$POST_BODY"
