@@ -17,9 +17,10 @@ jobs:
       - name: Extract project directory
         id: get-directory
         run: |
-          PROJECT_NAME=$(echo $input | sed -n 's/.*--project \([^ ]*\).*/\1/p')
           COMMENT="${{ github.event.comment.body }}"
-          PROJECT_DIR=$(echo "$COMMENT" | grep -oP '(?<=terraform apply --project )[^\s]+' | sed 's/--/\//g')
+          PROJECT_NAME=$(echo $COMMENT | sed -n 's/.*--project \([^ ]*\).*/\1/p')
+          PROJECT_DIR=$(echo "$COMMENT" | sed 's/terraform apply --project//' | sed 's/--/|/' | cut -d'|' -f1 | sed 's/-/\//')
+          echo "$PROJECT_NAME"
           echo "PROJECT_DIR=$PROJECT_DIR"
           echo "::set-output name=project_name::$PROJECT_NAME"
           echo "::set-output name=project_dir::$PROJECT_DIR"
