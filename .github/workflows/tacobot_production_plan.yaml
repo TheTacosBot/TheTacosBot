@@ -64,3 +64,11 @@ jobs:
             "context": "${{ inputs.name }}"
           }'
           gh api repos/${{ github.repository }}/statuses/${{ github.sha }} --input - <<< "$POST_BODY"
+      - name: Create deployment
+        run: |
+          gh api -X POST /repos/${{ github.repository }}/deployments \
+            -f ref="${{ github.sha }}" \
+            -f environment="${{ github.event.inputs.name }}" \
+            -f description="Planned project ${{ github.event.inputs.name }}" \
+            -f auto_merge=false \
+            -f required_contexts=[]
