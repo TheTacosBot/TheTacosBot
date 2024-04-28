@@ -57,14 +57,13 @@ jobs:
           name: ${{ steps.get-directory.outputs.project_name }}
           path: ${{ steps.get-directory.outputs.project_dir }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Debug
-        run: |
-          ls -al
-          ls -al ${{ steps.get-directory.outputs.project_dir }}
-          cat ${{ steps.get-directory.outputs.project_dir }}/${{ steps.get-directory.outputs.project_name }}
       - name: Terraform Init
-        working-directory: ./${{ steps.get-directory.outputs.project_dir }}
-        run: terraform init
+        run: |
+          pwd
+          cd ${{ steps.get-directory.outputs.project_dir }}
+          terraform init
       - name: Terraform Apply
-        working-directory: ./${{ steps.get-directory.outputs.project_dir }}
-        run: terraform apply plan -auto-approve
+        run: |
+          pwd
+          cd ${{ steps.get-directory.outputs.project_dir }}
+          terraform apply plan -auto-approve
