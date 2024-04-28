@@ -4,6 +4,7 @@ permissions:
   contents: read
   pull-requests: read
   actions: write
+  deployments: read
 
 on:
   pull_request:
