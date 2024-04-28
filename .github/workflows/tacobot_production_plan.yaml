@@ -54,7 +54,7 @@ jobs:
       - name: Create status check
         working-directory: ${{ github.event.inputs.dir }}
         run: |
-          SUMMARY=$(cat pull_plan_output | grep 'Plan:.*')
+          SUMMARY=$(cat full_plan_output | grep 'Plan:.*')
           LOG_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ job.container.id }}"
           POST_BODY='{
             "state": "success",
