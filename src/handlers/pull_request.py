@@ -11,6 +11,10 @@ def pull_request_handler(config):
 
     # TODO: how to notify user if no projects have changed
 
+    # TODO: create a deployment for each project and check if a deployment "lock" already exists
+    # if so, don't create a new deployment
+
+    # TODO: add ability to trigger plans for modules (i.e. atlantis autoplan feature)
     # Iterate over the projects and execute them
     for _, project in projects_to_run.items():
         url = f"https://api.github.com/repos/{github.org}/{github.repo}/actions/workflows/{project.workflow}_plan.yaml/dispatches"
