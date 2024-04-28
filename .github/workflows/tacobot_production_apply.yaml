@@ -34,7 +34,7 @@ jobs:
         id: get_commit
         run: |
           PR_NUMBER=$(echo ${{ github.event.issue.pull_request.url }} | grep -oE '[0-9]+$')
-          HEAD_COMMIT=$(gh pr view $PR_NUMBER --json headRefOid --jq .headRefOid)
+          HEAD_COMMIT=$(gh api repos/${{ github.repository }}/pulls/$PR_NUMBER --jq .head.sha)
           echo "Head commit of PR $PR_NUMBER is $HEAD_COMMIT"
           echo "::set-output name=head_commit::$HEAD_COMMIT"
       - name: Checkout
