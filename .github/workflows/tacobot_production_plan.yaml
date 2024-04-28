@@ -30,7 +30,7 @@ jobs:
       #  with:
       #    terraform_version: ${{ github.event.inputs.terraform_version }}
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
@@ -71,5 +71,5 @@ jobs:
             -f ref="${{ github.sha }}" \
             -f environment="${{ github.event.inputs.name }}" \
             -f description="Planned project ${{ github.event.inputs.name }}" \
-            -f auto_merge=false \
-            -f required_contexts=[]
+            -F auto_merge=false \
+            -F required_contexts[]=
