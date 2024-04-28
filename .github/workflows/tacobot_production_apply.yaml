@@ -1,11 +1,8 @@
 name: Terraform Production Apply
 
 on:
-  workflow_dispatch:
-    inputs:
-      terraform_version:
-        description: 'Terraform Version'
-        default: "1.1.7"
+  issue_comment:                                     
+    types: [created]
 
 jobs:
   apply_terraform:
