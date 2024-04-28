@@ -61,10 +61,10 @@ jobs:
         run: |
           ls -al
           ls -al ${{ steps.get-directory.outputs.project_dir }}
-          cat ${{ steps.get-directory.outputs.project_dir }}/full_plan_output
+          cat ${{ steps.get-directory.outputs.project_dir }}/${{ steps.get-directory.outputs.project_name }}
       - name: Terraform Init
-        working-directory: ${{ steps.get-directory.outputs.project_dir }}
+        working-directory: ./${{ steps.get-directory.outputs.project_dir }}
         run: terraform init
       - name: Terraform Apply
-        working-directory: ${{ steps.get-directory.outputs.project_dir }}
+        working-directory: ./${{ steps.get-directory.outputs.project_dir }}
         run: terraform apply plan -auto-approve
