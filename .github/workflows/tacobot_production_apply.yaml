@@ -27,14 +27,17 @@ jobs:
           echo "::set-output name=workflow_name::$WORKFLOW_NAME"
           echo "::set-output name=project_name::$PROJECT_NAME"
           echo "::set-output name=project_dir::$PROJECT_DIR"
-      - name: Debug
+      - name: Get PR Head Commit
+        id: get_commit
         run: |
-          echo "${{ github.event.issue.pull_request.head.sha }}"
-          echo "${{ github.event.issue.pull_request.base.sha }}"
+          PR_NUMBER=$(echo ${{ github.event.issue.pull_request.url }} | grep -oE '[0-9]+$')
+          HEAD_COMMIT=$(gh pr view $PR_NUMBER --json headRefOid --jq .headRefOid)
+          echo "Head commit of PR $PR_NUMBER is $HEAD_COMMIT"
+          echo "::set-output name=head_commit::$HEAD_COMMIT"
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.issue.pull_request.head.sha }}
+          ref: ${{ steps.get_commit.outputs.head_commit }}
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
