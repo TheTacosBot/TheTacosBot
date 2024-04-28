@@ -1,22 +1,42 @@
-name: Terraform Production Apply
+name: Terraform Apply - Production
+
+permissions:
+  contents: read
+  id-token: write
+  issues: read
 
 on:
-  workflow_dispatch:
-    inputs:
-      terraform_version:
-        description: 'Terraform Version'
-        default: "1.1.7"
+  issue_comment:                                     
+    types: [created, edited, deleted]
 
 jobs:
   apply_terraform:
+    if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     steps:
-      - uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ github.event.inputs.terraform_version }}
+      - name: Extract project directory
+        id: get-directory
+        run: |
+          COMMENT="${{ github.event.comment.body }}"
+          PROJECT_DIR=$(echo "$COMMENT" | grep -oP '(?<=terraform apply --project )[^\s]+' | sed 's/--/\//g')
+          echo "PROJECT_DIR=$PROJECT_DIR"
+          echo "::set-output name=project_dir::$PROJECT_DIR"
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::809929912595:role/GitHubActionRole
+          role-session-name: tacobot
+          aws-region: us-west-2
+      - name: Download a single artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: plan
+          path: ${{ steps.get-directory.outputs.project_dir }}
       - name: Terraform Init
+        working-directory: ${{ steps.get-directory.outputs.project_dir }}
         run: terraform init
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        working-directory: ${{ steps.get-directory.outputs.project_dir }}
+        run: terraform apply plan -auto-approve

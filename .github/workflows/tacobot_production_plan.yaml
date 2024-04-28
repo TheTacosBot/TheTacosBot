@@ -1,27 +1,75 @@
-name: Terraform Production Plan
+name: Terraform Plan - Production
+
+permissions:
+  id-token: write
+  contents: read
+  statuses: write
+  deployments: write
 
 on:
   workflow_dispatch:
     inputs:
-      directory:
+      name:
+        description: 'Name of the TacoBot Project'
+        required: true
+      dir:
         description: 'Directory to run Terraform'
         required: true
+      workflow:
+        description: 'TacoBot Workflow'
+        required: false
       terraform_version:
         description: 'Terraform Version'
         default: "1.1.7"
 
 jobs:
-  apply_terraform:
+  plan_terraform:
     runs-on: ubuntu-latest
     steps:
       #- uses: hashicorp/setup-terraform@v3
       #  with:
       #    terraform_version: ${{ github.event.inputs.terraform_version }}
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::809929912595:role/GitHubActionRole
+          role-session-name: tacobot
+          aws-region: us-west-2
       - name: Terraform Init
-        working-directory: ${{ github.event.inputs.directory }}
+        working-directory: ${{ github.event.inputs.dir }}
         run: terraform init
       - name: Terraform Plan
-        working-directory: ${{ github.event.inputs.directory }}
-        run: terraform plan
+        working-directory: ${{ github.event.inputs.dir }}
+        run: terraform plan -out=${{ inputs.name }} | tee full_plan_output
+      - name: Save Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.name }}
+          path: |
+            ${{ github.event.inputs.dir }}/${{ inputs.name }}
+      - name: Authenticate GitHub CLI
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+      # TODO: figure out why summary fails the json formatting
+      - name: Create status check
+        working-directory: ${{ github.event.inputs.dir }}
+        run: |
+          SUMMARY=$(cat full_plan_output | grep 'Plan:.*')
+          LOG_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ job.container.id }}"
+          POST_BODY='{
+            "state": "success",
+            "target_url": "'$LOG_URL'",
+            "description": "$SUMMARY",
+            "context": "${{ inputs.name }}"
+          }'
+          gh api repos/${{ github.repository }}/statuses/${{ github.sha }} --input - <<< "$POST_BODY"
+      - name: Create deployment
+        run: |
+          gh api -X POST /repos/${{ github.repository }}/deployments \
+            -f ref="${{ github.sha }}" \
+            -f environment="${{ github.event.inputs.name }}" \
+            -f description="Planned project ${{ github.event.inputs.name }}" \
+            -F auto_merge=false \
+            -F required_contexts[]=null

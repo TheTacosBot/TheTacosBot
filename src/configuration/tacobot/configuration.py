@@ -3,15 +3,14 @@ import re
 import copy
 from pydantic import BaseModel, ValidationError, Field
 from typing import Optional, List
-from src.configuration.atlantis.project import Project
-from src.logger import logger
-from src.exceptions import InvalidConfiguration
+from src.configuration.tacobot.project import Project
+
 
 class Config(BaseModel):
     projects: Optional[List[Project]] = Field(
         [],
         description="Lists the projects in this repo.",
-        thx_type='List\[[Project](#project)\]')
+    )
 
     @staticmethod
     def load(path):
@@ -20,15 +19,13 @@ class Config(BaseModel):
 
             with open(path) as stream:
                 loaded_config = yaml.safe_load(stream)
-                logger.debug(f"Loaded: {loaded_config}")
 
             config = Config(**loaded_config)
             return config
 
         except ValidationError as e:
-            logger.error(e)
-            raise InvalidConfiguration(str(e))
-            
+            raise Exception("Invalid configuration")
+
     def get_matching_project(self, project_name):
         """
         Returns the last project where the dir matches the regex pattern
@@ -47,14 +44,14 @@ class Config(BaseModel):
             workspace = project_name
 
         for project in self.projects:
-            if re.compile(f'^{project.dir}$').match(dir) and project.workspace == workspace:
+            if re.compile(f'^{project.dir}$').match(
+                    dir) and project.workspace == workspace:
                 # NOTE: it is VERY important to deepcopy the project here
                 # so the original configuration is not modified
                 matching_project = copy.deepcopy(project)
                 matching_project.dir = dir
                 matching_project.name = project_name
         return matching_project
-
 
     def get_projects_to_run(self, list_of_changed_files):
         # NOTE: we want to build a list of projects that we are going to execute.
@@ -64,9 +61,7 @@ class Config(BaseModel):
         # To solve this problem we use a last one in wins approach.
         projects_to_run = {}
         for config_project in self.projects:
-            for project in config_project.regex_projects(list_of_changed_files):
-                if project.should_plan(
-                        list_of_changed_files,
-                        self.repo_location,
-                        False):
-                    projects_to_run[project.name] = project
+            for project in config_project.regex_projects(
+                    list_of_changed_files):
+                projects_to_run[project.name] = project
+        return projects_to_run

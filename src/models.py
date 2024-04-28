@@ -1,14 +1,6 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
 from enum import Enum
-from src.logger import logger
-
-
-class LockAlreadyExists(Exception):
-    def __init__(self, org, repo, project_name, pr_number):
-        logger.debug(
-            f"A lock already exists on {org}/{repo} for {project_name} and {pr_number}")
 
 
 class Lock(BaseModel):

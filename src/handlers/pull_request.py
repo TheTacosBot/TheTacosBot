@@ -1,22 +1,24 @@
-from src.logger import logger
-from src.github import GitHub
+import os
 import requests
+from src.github import GitHub
+
 
 def pull_request_handler(config):
-    github = GitHub()
+    token = os.environ.get("INPUT_GITHUB_TOKEN")
+    github = GitHub(token)
     files_changed = github.pull_request_files_changed(False)
-    logger.debug(f"Changed files: {files_changed}")
-
 
     projects_to_run = config.get_projects_to_run(files_changed)
 
     # TODO: how to notify user if no projects have changed
 
+    # TODO: create a deployment for each project and check if a deployment "lock" already exists
+    # if so, don't create a new deployment
+
+    # TODO: add ability to trigger plans for modules (i.e. atlantis autoplan feature)
     # Iterate over the projects and execute them
     for _, project in projects_to_run.items():
-        logger.debug("Invoking GitHub action")
-        url = f"https://api.github.com/repos/{self.vcs.org}/{self.vcs.repo}/actions/workflows/{project.workflow}_plan.yaml/dispatches"
-        logger.debug(url)
+        url = f"https://api.github.com/repos/{github.org}/{github.repo}/actions/workflows/{project.workflow}_plan.yaml/dispatches"
         resp = requests.post(
             url,
             headers=github.request_header,
@@ -29,4 +31,6 @@ def pull_request_handler(config):
             }
         )
 
+        if resp.status_code >= 400:
+            print(resp.json())
         resp.raise_for_status()
