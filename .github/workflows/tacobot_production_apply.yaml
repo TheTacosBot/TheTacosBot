@@ -4,6 +4,7 @@ permissions:
   contents: read
   id-token: write
   issues: read
+  actions: read
 
 on:
   issue_comment:                                     
@@ -19,9 +20,11 @@ jobs:
         run: |
           COMMENT="${{ github.event.comment.body }}"
           PROJECT_NAME=$(echo "$COMMENT" | sed -n 's/.*--project \([^ ]*\).*/\1/p')
+          WORKFLOW_NAME=$(echo "$COMMENT" | sed -n 's/.*--project \([^ ]*\).*/\1/p'  | sed 's/--/|/' | cut -d'|' -f2)
           PROJECT_DIR=$(echo "$COMMENT" | sed 's/terraform apply --project//' | sed 's/--/|/' | cut -d'|' -f1 | sed 's/-/\//')
           echo "PROJECT_NAME=$PROJECT_NAME"
           echo "PROJECT_DIR=$PROJECT_DIR"
+          echo "::set-output name=workflow_name::$WORKFLOW_NAME"
           echo "::set-output name=project_name::$PROJECT_NAME"
           echo "::set-output name=project_dir::$PROJECT_DIR"
       - name: Checkout
@@ -37,9 +40,10 @@ jobs:
         uses: dawidd6/action-download-artifact@v3
         with:
           pr: ${{ github.event.issue.pull_request.number }}
-          workflow: ${{ steps.get-directory.outputs.project_name }}_plan.yaml
+          workflow: ${{ steps.get-directory.outputs.workflow_name }}_plan.yaml
           name: ${{ steps.get-directory.outputs.project_name }}
           path: ${{ steps.get-directory.outputs.project_dir }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Terraform Init
         working-directory: ${{ steps.get-directory.outputs.project_dir }}
         run: terraform init
