@@ -2,6 +2,7 @@ import os
 import requests
 from src.github import GitHub
 
+
 def pull_request_handler(config):
     token = os.environ.get("INPUT_GITHUB_TOKEN")
     github = GitHub(token)

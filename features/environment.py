@@ -1,5 +1,6 @@
 import requests_mock
 
+
 def before_all(context):
     context.m = requests_mock.Mocker()
 

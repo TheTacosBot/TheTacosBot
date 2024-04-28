@@ -2,12 +2,13 @@ import os
 from src.handlers.pull_request import pull_request_handler
 from src.configuration.tacobot.configuration import Config
 
+
 def run():
     event = os.environ.get("GITHUB_EVENT_NAME")
 
     try:
         config = Config.load(os.environ.get("INPUT_CONFIG_FILE"))
-    except:
+    except BaseException:
         print("Failed to load configuration file.")
         return
 
@@ -19,6 +20,7 @@ def run():
         pass
     else:
         raise Exception("Unknown event type.")
+
 
 if __name__ == "__main__":
     run()

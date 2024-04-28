@@ -3,6 +3,7 @@ import glob
 import os
 from pydantic import BaseModel, Field
 
+
 class Project(BaseModel):
     dir: str = Field(
         ...,
@@ -25,7 +26,8 @@ class Project(BaseModel):
         projects = []
         for file in files_changed:
             if re.compile(f'^{self.dir}').match(file) is not None:
-                dir = os.path.dirname(file) if os.path.dirname(file) != '' else '.'
+                dir = os.path.dirname(file) if os.path.dirname(
+                    file) != '' else '.'
                 d = self.dict(exclude={'name'}) | {'dir': dir}
                 p = Project(**d)
                 projects.append(p)

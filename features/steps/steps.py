@@ -2,9 +2,11 @@ import os
 from behave import given
 from src.main import run
 
+
 @given("a configuration file at {path}")
 def step_impl(context, path):
     os.environ['INPUT_CONFIG_FILE'] = path
+
 
 @when("a pull request is opened")
 def step_impl(context):
@@ -14,9 +16,11 @@ def step_impl(context):
     with context.m:
         context.result = run()
 
+
 @then("TacoBot fails gracefully")
 def step_impl(context):
     assert context.m.called is False
+
 
 @then("TacoBot triggers jobs")
 def step_impl(context):

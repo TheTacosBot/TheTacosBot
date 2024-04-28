@@ -7,6 +7,7 @@ import subprocess
 
 token_cache = {}
 
+
 class GitHub:
     def __init__(self, token: str):
         self.request_header = {
@@ -23,6 +24,7 @@ class GitHub:
             raise Exception("Event file not found")
         except json.JSONDecodeError:
             raise Exception("Could not parse event file.")
+
     @property
     def org(self):
         return self.event['repository']['owner']['login']
@@ -41,14 +43,18 @@ class GitHub:
 
     def pull_request_files_changed(self, drift_detection):
         if drift_detection is False:
-            resp = requests.get(f"https://api.github.com/repos/{self.org}/{self.repo}/pulls/{self.pull_request_number}/files?per_page=100", headers=self.request_header)
+            resp = requests.get(
+                f"https://api.github.com/repos/{self.org}/{self.repo}/pulls/{self.pull_request_number}/files?per_page=100",
+                headers=self.request_header)
 
             resp.raise_for_status()
 
             files_changed = resp.json()
 
-            while 'next' in resp.links.keys(): # pragma: no cover
-                resp = requests.get(resp.links['next']['url'], headers=self.request_header)
+            while 'next' in resp.links.keys():  # pragma: no cover
+                resp = requests.get(
+                    resp.links['next']['url'],
+                    headers=self.request_header)
                 files_changed.extend(resp.json())
 
             file_names = [f['filename'] for f in files_changed]
@@ -58,9 +64,8 @@ class GitHub:
         resp = requests.post(
             f"https://api.github.com/repos/{self.org}/{self.repo}/issues/{self.pull_request_number}/comments",
             headers=self.request_header,
-            json={'body': comment}
-
-        )
+            json={
+                'body': comment})
         resp.raise_for_status()
 
     def apply_requirements_errors(self, apply_requirements):
@@ -72,7 +77,7 @@ class GitHub:
         pr = None
         try:
             pr = self.get_pr_information()
-        except Exception as e: # pragma: no cover
+        except Exception as e:  # pragma: no cover
             return [str(e)]
 
         if 'approved' in apply_requirements:
@@ -91,7 +96,8 @@ class GitHub:
                 errors.append(
                     f"Pull Request must be mergeable to Apply and is currently: {pr['mergeable']}")
 
-            if pr['mergeable_state'] in ['blocked', 'dirty', 'draft', 'unknown']:
+            if pr['mergeable_state'] in [
+                    'blocked', 'dirty', 'draft', 'unknown']:
                 logger.debug("Mergeable state is not valid to apply")
                 errors.append(
                     f"Pull Request must be in a mergeable state to apply and is currently: {pr['mergeable_state']}")
@@ -110,16 +116,17 @@ class GitHub:
                     continue
 
                 if check_run['check_runs'][0]['status'] != 'completed' or check_run['check_runs'][0]['conclusion'] != 'success':
-                    errors.append(f'Project {check_run_name} must be applied first.')
+                    errors.append(
+                        f'Project {check_run_name} must be applied first.')
 
         return errors
 
     def get_pr_information(self):
-        logger.debug(f"Getting pull request information {self.org}/{self.repo}/pulls/{self.pull_request_number}")
+        logger.debug(
+            f"Getting pull request information {self.org}/{self.repo}/pulls/{self.pull_request_number}")
         resp = requests.get(
             f"https://api.github.com/repos/{self.org}/{self.repo}/pulls/{self.pull_request_number}",
-            headers=self.request_header
-        )
+            headers=self.request_header)
         resp.raise_for_status()
 
         return resp.json()
@@ -128,36 +135,39 @@ class GitHub:
         logger.debug("Getting pull request reviews")
         resp = requests.get(
             f"https://api.github.com/repos/{self.org}/{self.repo}/pulls/{self.pull_request_number}/reviews",
-            headers=self.request_header
-        )
+            headers=self.request_header)
         resp.raise_for_status()
 
         return resp.json()
 
     def get_check_runs_for_sha(self, sha):
-        logger.debug(f'Getting check runs for https://api.github.com/repos/{self.org}/{self.repo}/commits/{sha}/check-runs')
+        logger.debug(
+            f'Getting check runs for https://api.github.com/repos/{self.org}/{self.repo}/commits/{sha}/check-runs')
         resp = requests.get(
             f'https://api.github.com/repos/{self.org}/{self.repo}/commits/{sha}/check-runs',
-            headers=self.request_header
-        )
+            headers=self.request_header)
         resp.raise_for_status()
-        check_runs =  resp.json()['check_runs']
+        check_runs = resp.json()['check_runs']
 
-        while 'next' in resp.links.keys(): # pragma: no cover
+        while 'next' in resp.links.keys():  # pragma: no cover
             logger.debug("Making another request for check runs")
-            resp = requests.get(resp.links['next']['url'], headers=self.request_header)
+            resp = requests.get(
+                resp.links['next']['url'],
+                headers=self.request_header)
             check_runs.extend(resp.json()['check_runs'])
 
         return check_runs
 
     def _get_check_run(self, name):
-        logger.debug(f'Getting check runs for https://api.github.com/repos/{self.org}/{self.repo}/commits/{self.sha}/check-runs?check_name={name}')
+        logger.debug(
+            f'Getting check runs for https://api.github.com/repos/{self.org}/{self.repo}/commits/{self.sha}/check-runs?check_name={name}')
         resp = requests.get(
             f'https://api.github.com/repos/{self.org}/{self.repo}/commits/{self.sha}/check-runs?check_name={name}'
         )
         resp.raise_for_status()
 
         return resp.json()
+
 
 def is_token_expired(installation_id):
     org_token = token_cache[installation_id]
