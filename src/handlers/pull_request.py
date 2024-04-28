@@ -26,6 +26,6 @@ def pull_request_handler(config):
             }
         )
 
-        if resp.status_code != 200:
+        if resp.status_code >= 400:
             print(resp.json())
         resp.raise_for_status()
