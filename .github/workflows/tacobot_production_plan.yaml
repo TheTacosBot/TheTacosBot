@@ -37,6 +37,7 @@ jobs:
           role-to-assume: arn:aws:iam::809929912595:role/GitHubActionRole
           role-session-name: tacobot
           aws-region: us-west-2
+          disable-retry: true
       - name: Create unique plan path
         id: create_plan_path
         run: |
