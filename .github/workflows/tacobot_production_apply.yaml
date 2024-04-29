@@ -16,32 +16,40 @@ jobs:
     if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     steps:
-      - name: Extract project directory
-        id: get-directory
+      - name: Extract project name
+        id: get_project_name_from_comment
         run: |
           COMMENT="${{ github.event.comment.body }}"
-          PROJECT_NAME=$(echo "$COMMENT" | sed -n 's/.*--project \([^ ]*\).*/\1/p')
-          WORKFLOW_NAME=$(echo "$COMMENT" | sed -n 's/.*--project \([^ ]*\).*/\1/p'  | sed 's/--/|/' | cut -d'|' -f2)
-          PROJECT_DIR=$(echo "$COMMENT" | sed 's/terraform apply --project//' | sed 's/--/|/' | cut -d'|' -f1 | sed 's/-/\//')
+          PROJECT_NAME=$(echo "$COMMENT" | sed -n 's/.*(--project|-p) \([^ ]*\).*/\1/p')
           echo "PROJECT_NAME=$PROJECT_NAME"
-          echo "PROJECT_DIR=$PROJECT_DIR"
-          echo "::set-output name=workflow_name::$WORKFLOW_NAME"
           echo "::set-output name=project_name::$PROJECT_NAME"
-          echo "::set-output name=project_dir::$PROJECT_DIR"
       - name: Authenticate GitHub CLI
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
-      - name: Get PR Head Commit
-        id: get_commit
+      - name: Retrieve GitHub Deployment for Workspace
+        id: get_deployment_info
         run: |
-          PR_NUMBER=$(echo ${{ github.event.issue.pull_request.url }} | grep -oE '[0-9]+$')
-          HEAD_COMMIT=$(gh api repos/${{ github.repository }}/pulls/$PR_NUMBER --jq .head.sha)
-          echo "Head commit of PR $PR_NUMBER is $HEAD_COMMIT"
-          echo "::set-output name=head_commit::$HEAD_COMMIT"
+          DEPLOYMENT_JSON=$(gh api repos/${{ github.repository }}/deployments?environment=${{ steps.get_project_name_from_comment.outputs.project_name }} | jq '.[0]')
+          DEPLOYMENT_ID=$(echo "$DEPLOYMENT_JSON" | jq -r '.id')
+          DEPLOYMENT_INFO=$(echo "$DEPLOYMENT_JSON" | jq '.[0].payload')
+          echo "DEPLOYMENT_INFO=$DEPLOYMENT_INFO"
+          SHA=$(echo $DEPLOYMENT_INFO | jq -r fromjson.sha)
+          PR_NUMBER=$(echo $DEPLOYMENT_INFO | jq -r fromjson.pr_number)
+          PROJECT_NAME=$(echo $DEPLOYMENT_INFO | jq -r fromjson.project_name)
+          DIRECTORY=$(echo $DEPLOYMENT_INFO | jq -r fromjson.directory)
+          WORKFLOW=$(echo $DEPLOYMENT_INFO | jq -r fromjson.workflow)
+          PLAN_PATH=$(echo $DEPLOYMENT_INFO | jq -r fromjson.plan_path)
+          echo "::set-output name=deployment_id::$DEPLOYMENT_ID"
+          echo "::set-output name=sha::$SHA"
+          echo "::set-output name=pr_number::$PR_NUMBER"
+          echo "::set-output name=project_name::$PROJECT_NAME"
+          echo "::set-output name=directory::$DIRECTORY"
+          echo "::set-output name=workflow::$WORKFLOW"
+          echo "::set-output name=plan_path::$PLAN_PATH"
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.get_commit.outputs.head_commit }}
+          ref: ${{ steps.get_deployment_info.outputs.sha }}
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -53,17 +61,30 @@ jobs:
         uses: dawidd6/action-download-artifact@v3
         with:
           pr: ${{ github.event.issue.pull_request.number }}
-          workflow: ${{ steps.get-directory.outputs.workflow_name }}_plan.yaml
-          name: ${{ steps.get-directory.outputs.project_name }}
-          path: ${{ steps.get-directory.outputs.project_dir }}
+          workflow: ${{ steps.get_deployment_info.outputs.workflow }}_plan.yaml
+          name: ${{ steps.get_deployment_info.outputs.plan_path }}
+          path: ${{ steps.get_deployment_info.outputs.directory }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Terraform Init
         run: |
-          pwd
-          cd ${{ steps.get-directory.outputs.project_dir }}
+          cd ${{ steps.get_deployment_info.outputs.directory }}
           terraform init
       - name: Terraform Apply
+        id: apply_terraform
         run: |
-          pwd
-          cd ${{ steps.get-directory.outputs.project_dir }}
-          terraform apply -auto-approve ${{ steps.get-directory.outputs.project_name}}
+          cd ${{ steps.get_deployment_info.outputs.directory }}
+          if terraform apply -auto-approve ${{ steps.get_deployment_info.outputs.plan_path }}; then
+            echo "::set-output name=status::success"
+          else
+            echo "::set-output name=status::failure"
+          fi
+      - name: Set deployment status
+        run: |
+          STATE="${{ steps.apply_terraform.outputs.status }}"  # Can be one of error, failure, inactive, in_progress, queued pending, or success
+          gh api -X POST /repos/${{ github.repository }}/deployments/$DEPLOYMENT_ID/statuses \
+            -f state="$STATE" \
+            -f log_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            -f description="Deployment $STATE" \
+            -f environment="${{ github.event.inputs.name }}" \
+            -f environment_url="https://example.com/"  # Optional: URL to view the deployed application
+          echo "Deployment status set to $STATE"
