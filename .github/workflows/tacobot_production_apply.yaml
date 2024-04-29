@@ -82,5 +82,5 @@ jobs:
             -f state="$STATE" \
             -f log_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             -f description="Deployment $STATE" \
-            -f environment="${{ github.event.inputs.name }}"
+            -f environment="${{ steps.get_deployment_info.outputs.project_name }}"
           echo "Deployment status set to $STATE"
