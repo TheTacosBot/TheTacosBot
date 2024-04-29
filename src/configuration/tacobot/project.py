@@ -20,7 +20,7 @@ class Project(BaseModel):
         if self.dir == '.':
             return "root"
         else:
-            return f"{self.dir.replace('/', '-')}--{self.workflow.replace('/', '-')}"
+            return f"{self.dir}:{self.workflow}"
 
     def regex_projects(self, files_changed):
         projects = []
