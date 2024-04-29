@@ -7,6 +7,10 @@ permissions:
   deployments: write # required to create a deployment
   actions: read # required to get the job id to link the status to the correct job/log output
 
+concurrency:
+  group: tacosbot-${{ github.event.inputs.name }}-plan
+  cancel-in-progress: true
+
 on:
   workflow_dispatch:
     inputs:
