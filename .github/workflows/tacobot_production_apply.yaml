@@ -78,7 +78,7 @@ jobs:
       - name: Set deployment status
         run: |
           STATE="success"  # Can be one of error, failure, inactive, in_progress, queued pending, or success
-          gh api -X POST /repos/${{ github.repository }}/deployments/$DEPLOYMENT_ID/statuses \
+          gh api -X POST /repos/${{ github.repository }}/deployments/${{ steps.get_deployment_info.outputs.deployment_id }}/statuses \
             -f state="$STATE" \
             -f log_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             -f description="Deployment $STATE" \
