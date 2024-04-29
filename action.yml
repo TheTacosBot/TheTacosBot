@@ -11,6 +11,10 @@ inputs:
   github_token:
     description: "GitHub Token"
     required: true
+  drift_detection:
+    description: "Set to any value to enable drift detection"
+    required: false
+    default: ""
 runs:
   using: 'docker'
   image: 'Dockerfile'

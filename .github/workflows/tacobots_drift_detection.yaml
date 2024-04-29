@@ -1,0 +1,24 @@
+name: TacoBot
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: write
+  deployments: write
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run TacoBot
+        uses: ./
+        with:
+          taco_type: atlantis
+          config_file: .tacobot.yaml
+          github_token: ${{ github.token }}
+          drift_detection: true
