@@ -5,6 +5,7 @@ permissions:
   contents: read
   statuses: write
   deployments: write
+  actions: read
 
 on:
   workflow_dispatch:
