@@ -37,18 +37,22 @@ jobs:
           role-to-assume: arn:aws:iam::809929912595:role/GitHubActionRole
           role-session-name: tacobot
           aws-region: us-west-2
+      - name: Create unique plan path
+        id: create_plan_path
+        run: |
+          echo "::set-output name=plan_path::$(uuidgen)"
       - name: Terraform Init
         working-directory: ${{ github.event.inputs.dir }}
         run: terraform init
       - name: Terraform Plan
         working-directory: ${{ github.event.inputs.dir }}
-        run: terraform plan -out=${{ inputs.name }} | tee full_plan_output
+        run: terraform plan -out=${{ steps.create_plan_path.outputs.plan_path }} | tee full_plan_output
       - name: Save Plan
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.name }}
+          name: ${{ steps.create_plan_path.outputs.plan_path }}
           path: |
-            ${{ github.event.inputs.dir }}/${{ inputs.name }}
+            ${{ github.event.inputs.dir }}/${{ steps.create_plan_path.outputs.plan_path }}
       - name: Authenticate GitHub CLI
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
@@ -68,7 +72,7 @@ jobs:
       - name: Create deployment
         id: create_deployment
         run: |
-          PAYLOAD="{\"sha\": \"${{ github.sha }}\", \"pr_number\": \"${{ github.event.pull_request.number }}\", \"project_name\": \"${{ github.event.inputs.name }}\", \"directory\": \"${{ github.event.inputs.dir }}\", \"workflow\": \"${{ github.event.inputs.workflow }}\"}"
+          PAYLOAD="{\"sha\": \"${{ github.sha }}\", \"pr_number\": \"${{ github.event.pull_request.number }}\", \"project_name\": \"${{ github.event.inputs.name }}\", \"directory\": \"${{ github.event.inputs.dir }}\", \"workflow\": \"${{ github.event.inputs.workflow }}\", \"plan_path\": \"${{ steps.create_plan_path.outputs.plan_path }}\"}"
           DEPLOYMENT_RESPONSE=$(gh api -X POST /repos/${{ github.repository }}/deployments \
             -f ref="${{ github.sha }}" \
             -f environment="${{ github.event.inputs.name }}" \
@@ -82,7 +86,7 @@ jobs:
       - name: Set deployment status
         run: |
           DEPLOYMENT_ID=${{ steps.create_deployment.outputs.deployment_id }}
-          STATE="in_progress"  # Can be one of error, failure, inactive, in_progress, queued pending, or success
+          STATE="pending"  # Can be one of error, failure, inactive, in_progress, queued pending, or success
 
           gh api -X POST /repos/${{ github.repository }}/deployments/$DEPLOYMENT_ID/statuses \
             -f state="$STATE" \
