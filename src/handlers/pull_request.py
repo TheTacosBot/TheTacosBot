@@ -15,14 +15,20 @@ def pull_request_handler(config):
     # TODO: add ability to trigger plans for modules (i.e. atlantis autoplan feature)
     # Iterate over the projects and execute them
     for _, project in projects_to_run.items():
+        (deployment_id, is_this_pr) = github.project_has_pending_deployment(project.name)
 
-        if not github.project_has_pending_deployment(project.name):
-            inputs = {
-                'name': project.name,
-                **project.dict(),
-            }
-            deployment_id = github.create_deployment(project)
-            github.update_deployment_status(deployment_id, 'pending', f'Creating deployment for {project.name}')
-            github.invoke_workflow_dispatch(project.workflow, github.head_branch, inputs)
-        else:
-            print(f'Project {project.name} has a pending deployment. Skipping...')
+        if deployment_id is not None and not is_this_pr:
+            return print("Another PR has a pending deployment")
+        
+        # We need to replace the existing deployment with a new one since the
+        # sha and information changes.
+        if deployment_id is not None and is_this_pr:
+            github.delete_deployment(deployment_id)
+    
+        inputs = {
+            'name': project.name,
+            **project.dict(),
+        }
+        deployment_id = github.create_deployment(project)
+        github.update_deployment_status(deployment_id, 'pending', f'Creating deployment for {project.name}')
+        github.invoke_workflow_dispatch(project.workflow, github.head_branch, inputs)

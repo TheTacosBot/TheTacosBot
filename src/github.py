@@ -178,6 +178,12 @@ class GitHub:
         resp.raise_for_status()
         return resp.json()['id']
     
+    def delete_deployment(self, deployment_id):
+        resp = requests.delete(
+            f'https://api.github.com/repos/{self.org}/{self.repo}/deployments/{deployment_id}',
+            headers=self.request_header
+        )
+        resp.raise_for_status()
     def update_deployment_status(self, deployment_id, state, description):
         requests.post(
             f'https://api.github.com/repos/{self.org}/{self.repo}/deployments/{deployment_id}/statuses',
@@ -195,14 +201,21 @@ class GitHub:
         )
 
         deployments = resp.json()
+
+        if len(deployments) == 0:
+            return None, False
+
         latest_deployment = deployments[0]
 
-        resp = requests.get(latest_deployment['statuses_url'], headers=self.request_header)
-        deployment_status = resp.json()[0]
+        deployment_status = self.get_deployment_status(latest_deployment['id'])
         # Can be one of error, failure, inactive, in_progress, queued pending, or success
-        if deployment_status['state'] in ['queued', 'pending', 'in_progress'] and latest_deployment['payload']['pr_number'] != self.pull_request_number:
-            return True
-        return False
+        if deployment_status['state'] in ['queued', 'pending', 'in_progress']:
+            return latest_deployment['id'], latest_deployment['payload']['pr_number'] == self.pull_request_number
+        return None, False
+
+    def get_deployment_status(self, deployment_id):
+        resp = requests.get(f"https://api.github.com/repos/{self.org}/{self.repo}/deployments/{deployment_id}/statuses", headers=self.request_header)
+        return resp.json()[0]
 
     def invoke_workflow_dispatch(self, workflow, ref, inputs):
         url = f"https://api.github.com/repos/{self.org}/{self.repo}/actions/workflows/{workflow}_plan.yaml/dispatches"
