@@ -1,6 +1,6 @@
 import os
 from src.handlers.pull_request import pull_request_handler
-from orchestrator.src.handlers.drift_detection import drift_detection_handler
+from src.handlers.drift_detection import drift_detection_handler
 from src.configuration.tacobot.configuration import Config
 
 
