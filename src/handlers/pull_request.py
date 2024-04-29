@@ -23,12 +23,15 @@ def pull_request_handler(config):
         # We need to replace the existing deployment with a new one since the
         # sha and information changes.
         if deployment_id is not None and is_this_pr:
+            print("Found previously existing deployment for this PR. Removing it.")
             github.delete_deployment(deployment_id)
     
         inputs = {
             'name': project.name,
             **project.dict(),
         }
+        print(f"Creating Deployment for {project.name}")
         deployment_id = github.create_deployment(project)
         github.update_deployment_status(deployment_id, 'pending', f'Creating deployment for {project.name}')
+        print(f"Invoking {project.workflow} for project: {project.name}")
         github.invoke_workflow_dispatch(project.workflow, github.head_branch, inputs)
