@@ -47,7 +47,7 @@ jobs:
         run: terraform init
       - name: Terraform Plan
         working-directory: ${{ github.event.inputs.dir }}
-        run: terraform plan -out=${{ steps.create_plan_path.outputs.plan_path }} | tee full_plan_output
+        run: terraform plan -no-color -out=${{ steps.create_plan_path.outputs.plan_path }} | tee full_plan_output
       - name: Save Plan
         uses: actions/upload-artifact@v4
         with:
