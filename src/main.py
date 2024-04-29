@@ -20,7 +20,7 @@ def run():
     elif event == "issue_comment":
         pass
     elif os.getenv("INPUT_DRIFT_DETECTION") != "":
-        drift_detection_handler()
+        drift_detection_handler(config)
     else:
         raise Exception("Unknown event type.")
 
