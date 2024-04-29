@@ -20,7 +20,7 @@ jobs:
         id: get_project_name_from_comment
         run: |
           COMMENT="${{ github.event.comment.body }}"
-          PROJECT_NAME=$(echo "$COMMENT" | sed -n 's/.*(--project|-p) \([^ ]*\).*/\1/p')
+          PROJECT_NAME=$(echo "$COMMENT" | sed -n 's/.*--project \([^ ]*\).*/\1/p')
           echo "PROJECT_NAME=$PROJECT_NAME"
           echo "::set-output name=project_name::$PROJECT_NAME"
       - name: Authenticate GitHub CLI
