@@ -15,6 +15,9 @@ inputs:
     description: "Set to any value to enable drift detection"
     required: false
     default: ""
+  files:
+    description: "List of files in repo"
+    required: false
 runs:
   using: 'docker'
   image: 'Dockerfile'

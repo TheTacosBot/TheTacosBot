@@ -15,9 +15,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Debug
+      - name: Get List of Files in Repo
+        id: files
         run: |
-          git ls-tree --full-tree -r --name-only HEAD
+          FILES=$(git ls-tree --full-tree -r --name-only HEAD)
+          echo "::set-output name=files::$FILES"
       - name: Run TacoBot
         uses: ./
         with:
@@ -25,3 +27,4 @@ jobs:
           config_file: .tacobot.yaml
           github_token: ${{ github.token }}
           drift_detection: true
+          files: ${{ steps.files.outputs.files }}
