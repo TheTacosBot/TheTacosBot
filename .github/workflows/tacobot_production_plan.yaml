@@ -64,7 +64,7 @@ jobs:
         id: job_id
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          job_name: Terraform Plan - Production
+          job_name: plan_terraform
       - name: Output Current Job Log URL
         run: echo ${{ steps.jobs.outputs.html_url }}
       - name: Create status check
