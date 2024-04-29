@@ -66,6 +66,7 @@ jobs:
           }'
           gh api repos/${{ github.repository }}/statuses/${{ github.sha }} --input - <<< "$POST_BODY"
       - name: Create deployment
+        id: create_deployment
         run: |
           PAYLOAD="{\"sha\": \"${{ github.sha }}\", \"pr_number\": \"${{ github.event.pull_request.number }}\", \"project_name\": \"${{ github.event.inputs.name }}\", \"directory\": \"${{ github.event.inputs.dir }}\", \"workflow\": \"${{ github.event.inputs.workflow }}\"}"
           DEPLOYMENT_RESPONSE=$(gh api -X POST /repos/${{ github.repository }}/deployments \
