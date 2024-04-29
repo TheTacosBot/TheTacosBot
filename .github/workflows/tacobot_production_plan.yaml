@@ -1,11 +1,11 @@
 name: Terraform Plan - Production
 
 permissions:
-  id-token: write
-  contents: read
-  statuses: write
-  deployments: write
-  actions: read
+  id-token: write # required for OIDC authentication with AWS
+  contents: read # required to clone the repo
+  statuses: write # required to create a status check
+  deployments: write # required to create a deployment
+  actions: read # required to get the job id to link the status to the correct job/log output
 
 on:
   workflow_dispatch:
@@ -49,7 +49,7 @@ jobs:
       - name: Terraform Plan
         id: terraform_plan
         working-directory: ${{ github.event.inputs.dir }}
-        run: terraform plan -no-color -out=${{ steps.create_plan_path.outputs.plan_path }} | tee full_plan_output
+        run: terraform plan -out=${{ steps.create_plan_path.outputs.plan_path }} | tee full_plan_output
       - name: Save Plan
         uses: actions/upload-artifact@v4
         with:
@@ -64,12 +64,15 @@ jobs:
         id: job_id
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          job_name: "terraform_plan"
+          job_id: Terraform Plan
       - name: Output Current Job Log URL
         run: echo ${{ steps.jobs.outputs.html_url }}
       - name: Create status check
         working-directory: ${{ github.event.inputs.dir }}
         run: |
+          # We need to strip the color from the Terraform plan to prevent invalid
+          # characters from creating malformed JSON
+          sed -i 's/\x1b\[[0-9;]*m//g' full_plan_output
           SUMMARY=$(cat full_plan_output | grep 'Plan:.*')
           POST_BODY='{
             "state": "success",
