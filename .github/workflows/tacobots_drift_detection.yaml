@@ -18,7 +18,7 @@ jobs:
       - name: Get List of Files in Repo
         id: files
         run: |
-          FILES=$(git ls-tree --full-tree -r --name-only HEAD)
+          FILES=$(git ls-tree --full-tree -r --name-only HEAD | tr '\n' '|' | sed 's/,$//')
           echo "::set-output name=files::$FILES"
       - name: Run TacoBot
         uses: ./
