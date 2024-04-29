@@ -79,7 +79,6 @@ jobs:
           DEPLOYMENT_ID=$(echo "$DEPLOYMENT_RESPONSE" | jq -r .id)
           echo "::set-output name=deployment_id::$DEPLOYMENT_ID"
       - name: Set deployment status
-        if: steps.create_deployment.outputs.deployment_id
         run: |
           DEPLOYMENT_ID=${{ steps.create_deployment.outputs.deployment_id }}
           STATE="in_progress"  # Can be one of error, failure, inactive, in_progress, queued pending, or success
