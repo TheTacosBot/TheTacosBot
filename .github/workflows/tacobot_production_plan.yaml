@@ -1,10 +1,15 @@
 name: Terraform Plan - Production
 
 permissions:
-  id-token: write
-  contents: read
-  statuses: write
-  deployments: write
+  id-token: write # required for OIDC authentication with AWS
+  contents: read # required to clone the repo
+  statuses: write # required to create a status check
+  deployments: write # required to create a deployment
+  actions: read # required to get the job id to link the status to the correct job/log output
+
+concurrency:
+  group: tacosbot-${{ github.event.inputs.name }}-plan
+  cancel-in-progress: true
 
 on:
   workflow_dispatch:
@@ -37,6 +42,7 @@ jobs:
           role-to-assume: arn:aws:iam::809929912595:role/GitHubActionRole
           role-session-name: tacobot
           aws-region: us-west-2
+          disable-retry: true
       - name: Create unique plan path
         id: create_plan_path
         run: |
@@ -45,6 +51,7 @@ jobs:
         working-directory: ${{ github.event.inputs.dir }}
         run: terraform init
       - name: Terraform Plan
+        id: terraform_plan
         working-directory: ${{ github.event.inputs.dir }}
         run: terraform plan -out=${{ steps.create_plan_path.outputs.plan_path }} | tee full_plan_output
       - name: Save Plan
@@ -56,18 +63,26 @@ jobs:
       - name: Authenticate GitHub CLI
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
-      # TODO: figure out why summary fails the json formatting
+      - name: Get Current Job Log URL
+        uses: Tiryoh/gha-jobid-action@v1
+        id: job_id
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          job_name: plan_terraform
+      - name: Output Current Job Log URL
+        run: echo ${{ steps.jobs.outputs.html_url }}
       - name: Create status check
         working-directory: ${{ github.event.inputs.dir }}
         run: |
+          # We need to strip the color from the Terraform plan to prevent invalid
+          # characters from creating malformed JSON
+          sed -i 's/\x1b\[[0-9;]*m//g' full_plan_output
           SUMMARY=$(cat full_plan_output | grep 'Plan:.*')
-          LOG_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ job.container.id }}"
           POST_BODY='{
             "state": "success",
-            "target_url": "'$LOG_URL'",
+            "target_url": "${{ steps.job_id.outputs.html_url }}?check_suite_focus=true#step:6:1",
             "description": "'$SUMMARY'",
             "context": "${{ inputs.name }}"
           }'
 
-          echo "$POST_BODY"
           gh api repos/${{ github.repository }}/statuses/${{ github.sha }} --input - <<< "$POST_BODY"
