@@ -34,6 +34,9 @@ class GitHub:
         return self.event['repository']['name']
 
     @property
+    def sha(self):
+        return self.event['pull_request']['head']['sha']
+    @property
     def pull_request_number(self):
         return self.event['pull_request']['number']
 
