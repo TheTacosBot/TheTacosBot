@@ -74,18 +74,13 @@ jobs:
         id: apply_terraform
         run: |
           cd ${{ steps.get_deployment_info.outputs.directory }}
-          if terraform apply -auto-approve ${{ steps.get_deployment_info.outputs.plan_path }}; then
-            echo "::set-output name=status::success"
-          else
-            echo "::set-output name=status::failure"
-          fi
+          terraform apply -auto-approve ${{ steps.get_deployment_info.outputs.plan_path }}
       - name: Set deployment status
         run: |
-          STATE="${{ steps.apply_terraform.outputs.status }}"  # Can be one of error, failure, inactive, in_progress, queued pending, or success
+          STATE="success"  # Can be one of error, failure, inactive, in_progress, queued pending, or success
           gh api -X POST /repos/${{ github.repository }}/deployments/$DEPLOYMENT_ID/statuses \
             -f state="$STATE" \
             -f log_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             -f description="Deployment $STATE" \
             -f environment="${{ github.event.inputs.name }}" \
-            -f environment_url="https://example.com/"  # Optional: URL to view the deployed application
           echo "Deployment status set to $STATE"
