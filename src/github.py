@@ -122,8 +122,6 @@ class GitHub:
         return errors
 
     def get_pr_information(self):
-        logger.debug(
-            f"Getting pull request information {self.org}/{self.repo}/pulls/{self.pull_request_number}")
         resp = requests.get(
             f"https://api.github.com/repos/{self.org}/{self.repo}/pulls/{self.pull_request_number}",
             headers=self.request_header)
@@ -132,7 +130,6 @@ class GitHub:
         return resp.json()
 
     def _get_reviews(self):
-        logger.debug("Getting pull request reviews")
         resp = requests.get(
             f"https://api.github.com/repos/{self.org}/{self.repo}/pulls/{self.pull_request_number}/reviews",
             headers=self.request_header)
@@ -141,8 +138,6 @@ class GitHub:
         return resp.json()
 
     def get_check_runs_for_sha(self, sha):
-        logger.debug(
-            f'Getting check runs for https://api.github.com/repos/{self.org}/{self.repo}/commits/{sha}/check-runs')
         resp = requests.get(
             f'https://api.github.com/repos/{self.org}/{self.repo}/commits/{sha}/check-runs',
             headers=self.request_header)
@@ -150,7 +145,6 @@ class GitHub:
         check_runs = resp.json()['check_runs']
 
         while 'next' in resp.links.keys():  # pragma: no cover
-            logger.debug("Making another request for check runs")
             resp = requests.get(
                 resp.links['next']['url'],
                 headers=self.request_header)
@@ -158,18 +152,74 @@ class GitHub:
 
         return check_runs
 
+    def create_deployment(self, project):
+        resp = requests.post(
+            f'https://api.github.com/repos/{self.org}/{self.repo}/deployments',
+            headers=self.request_header,
+            json={
+                'ref': self.head_branch,
+                'environment': project.name,
+                'description': f'Terraform for {project.name}',
+                'auto_merge': False,
+                'required_contexts': [],
+                'payload': {
+                    'project': project.dict(),
+                    'sha': self.sha,
+                    'pr_number': self.pull_request_number,
+                    'project_name': project.name,
+                    **project.dict()
+                }
+            }
+        )
+
+        resp.raise_for_status()
+        return resp.json()['id']
+    
+    def update_deployment_status(self, deployment_id, state, description):
+        requests.post(
+            f'https://api.github.com/repos/{self.org}/{self.repo}/deployments/{deployment_id}/statuses',
+            headers=self.request_header,
+            json={
+                'state': state,
+                'description': description,
+            }
+        )
+
+    def project_has_pending_deployment(self, project_name):
+        resp = requests.get(
+            f'https://api.github.com/repos/{self.org}/{self.repo}/deployments?enviroment={project_name}',
+            headers=self.request_header
+        )
+
+        deployments = resp.json()
+        latest_deployment = deployments[0]
+
+        resp = requests.get(latest_deployment['statuses_url'], headers=self.request_header)
+        deployment_status = resp.json()[0]
+        # Can be one of error, failure, inactive, in_progress, queued pending, or success
+        if deployment_status['state'] in ['queued', 'pending', 'in_progress'] and latest_deployment['payload']['pr_number'] != self.pull_request_number:
+            return True
+        return False
+
+    def invoke_workflow_dispatch(self, workflow, ref, inputs):
+        url = f"https://api.github.com/repos/{self.org}/{self.repo}/actions/workflows/{workflow}_plan.yaml/dispatches"
+        resp = requests.post(
+            url,
+            headers=self.request_header,
+            json={
+                'ref': ref,
+                'inputs': inputs
+            }
+        )
+
+        if resp.status_code >= 400:
+            print(resp.json())
+        resp.raise_for_status()
+    
     def _get_check_run(self, name):
-        logger.debug(
-            f'Getting check runs for https://api.github.com/repos/{self.org}/{self.repo}/commits/{self.sha}/check-runs?check_name={name}')
         resp = requests.get(
             f'https://api.github.com/repos/{self.org}/{self.repo}/commits/{self.sha}/check-runs?check_name={name}'
         )
         resp.raise_for_status()
 
         return resp.json()
-
-
-def is_token_expired(installation_id):
-    org_token = token_cache[installation_id]
-
-    return org_token['expires'] < int(time.time())
