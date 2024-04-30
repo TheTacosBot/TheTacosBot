@@ -156,6 +156,7 @@ class GitHub:
         return check_runs
 
     def create_deployment(self, project):
+        # TODO: create plan path uuid
         resp = requests.post(
             f'https://api.github.com/repos/{self.org}/{self.repo}/deployments',
             headers=self.request_header,
