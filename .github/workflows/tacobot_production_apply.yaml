@@ -58,10 +58,9 @@ jobs:
           ref: ${{ steps.get_deployment_info.outputs.sha }}
       - name: Validate Apply Requirements
         run: |
-          gh api repos/${{ github.repository }}/pulls/${{ steps.get_deployment_info.outputs.pr_number }} | jq
           MERGABLE=$(gh api repos/${{ github.repository }}/pulls/${{ steps.get_deployment_info.outputs.pr_number }} | jq '.mergeable')
           echo "Current PR is mergable: $MERGABLE"
-          echo "$MERGABLE" | grep -q 'true' || echo "PR does not meet apply requirements" && exit 1
+          echo "$MERGABLE" | grep -q 'true' || (echo "PR does not meet apply requirements" && exit 1)
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
