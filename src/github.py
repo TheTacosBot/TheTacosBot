@@ -177,6 +177,8 @@ class GitHub:
 
         resp.raise_for_status()
         print(f"Created deployment for {project.name}. ID: {resp.json()['id']}")
+        print(resp.status_code)
+        print(resp.json())
         return resp.json()['id']
     
     def delete_deployment(self, deployment_id):
