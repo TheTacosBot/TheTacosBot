@@ -201,12 +201,16 @@ class GitHub:
             headers=self.request_header
         )
 
+        resp.raise_for_status()
         deployments = resp.json()
 
         if len(deployments) == 0:
             return None, False
 
         latest_deployment = deployments[0]
+        assert 'id' in latest_deployment, "Deployment ID not found in deployment"
+        assert 'payload' in latest_deployment, "Payload not found in deployment"
+        assert 'pr_number' in latest_deployment['payload'], "PR Number not found in deployment payload"
 
         deployment_status = self.get_deployment_status(latest_deployment['id'])
         # Can be one of error, failure, inactive, in_progress, queued pending, or success
@@ -216,6 +220,7 @@ class GitHub:
 
     def get_deployment_status(self, deployment_id):
         resp = requests.get(f"https://api.github.com/repos/{self.org}/{self.repo}/deployments/{deployment_id}/statuses", headers=self.request_header)
+        resp.raise_for_status()
         return resp.json()[0]
 
     def invoke_workflow_dispatch(self, workflow, ref, inputs):
