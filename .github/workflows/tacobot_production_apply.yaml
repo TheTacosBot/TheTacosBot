@@ -52,6 +52,9 @@ jobs:
           echo "::set-output name=directory::$DIRECTORY"
           echo "::set-output name=workflow::$WORKFLOW"
           echo "::set-output name=plan_path::$PLAN_PATH"
+      - name: Validate Apply Requirements
+        run: |
+          gh pr view ${{ steps.get_deployment_info.outputs.pr_number }} --json mergeable | jq -r '.mergeable' | grep -q 'true' || exit 1
       - name: Checkout
         uses: actions/checkout@v4
         with:
