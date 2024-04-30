@@ -58,6 +58,7 @@ jobs:
           ref: ${{ steps.get_deployment_info.outputs.sha }}
       - name: Validate Apply Requirements
         run: |
+          gh pr view ${{ steps.get_deployment_info.outputs.pr_number }}
           MERGABLE=$(gh pr view ${{ steps.get_deployment_info.outputs.pr_number }} --json mergeable | jq -r '.mergeable')
           echo "Current PR is mergable: $MERGABLE"
           echo "$MERGABLE" | grep -q 'true' || echo "PR does not meet apply requirements" && exit 1
