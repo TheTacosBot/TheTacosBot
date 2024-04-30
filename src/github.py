@@ -214,6 +214,8 @@ class GitHub:
 
         deployment_status = self.get_deployment_status(latest_deployment['id'])
         # Can be one of error, failure, inactive, in_progress, queued pending, or success
+        print(deployment_status)
+        print(latest_deployment)
         if deployment_status['state'] in ['queued', 'pending', 'in_progress']:
             return latest_deployment['id'], latest_deployment['payload']['pr_number'] == self.pull_request_number
         return None, False
