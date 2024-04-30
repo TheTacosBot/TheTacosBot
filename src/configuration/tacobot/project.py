@@ -1,7 +1,7 @@
 import re
-import glob
 import os
 from pydantic import BaseModel, Field
+from uuid import uuid4
 
 
 class Project(BaseModel):
@@ -13,6 +13,11 @@ class Project(BaseModel):
     workflow: str = Field(
         ...,
         description="The name of the GitHub Action workflow to run for this project."
+    )
+
+    plan_path: str = Field(
+        uuid4(),
+        description="The path to the plan file for this project."
     )
 
     @property

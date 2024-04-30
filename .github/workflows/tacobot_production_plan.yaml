@@ -20,6 +20,9 @@ on:
       dir:
         description: 'Directory to run Terraform'
         required: true
+      plan_path:
+        description: 'Path to save the Terraform plan'
+        required: true
       workflow:
         description: 'TacoBot Workflow'
         required: false
@@ -43,10 +46,6 @@ jobs:
           role-session-name: tacobot
           aws-region: us-west-2
           disable-retry: true
-      - name: Create unique plan path
-        id: create_plan_path
-        run: |
-          echo "::set-output name=plan_path::$(uuidgen)"
       - name: Terraform Init
         working-directory: ${{ github.event.inputs.dir }}
         run: terraform init
