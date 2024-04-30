@@ -18,7 +18,9 @@ def pull_request_handler(config):
         (deployment_id, is_this_pr) = github.project_has_pending_deployment(project.name)
 
         if deployment_id is not None and not is_this_pr:
-            return print("Another PR has a pending deployment")
+            print(f"Found previously existing deployment for {project.name}. Skipping.")
+            print(f"Deployment ID: {deployment_id}")
+            return
         
         # We need to replace the existing deployment with a new one since the
         # sha and information changes.
