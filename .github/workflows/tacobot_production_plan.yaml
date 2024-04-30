@@ -39,6 +39,7 @@ jobs:
       #    terraform_version: ${{ github.event.inputs.terraform_version }}
       - name: Checkout
         uses: actions/checkout@v4
+      ## Steps below here are able to be customized
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -52,7 +53,10 @@ jobs:
       - name: Terraform Plan
         id: terraform_plan
         working-directory: ${{ github.event.inputs.dir }}
-        run: terraform plan -out=${{ github.event.inputs.plan_path }} | tee full_plan_output
+        run: |
+          terraform plan -out=${{ github.event.inputs.plan_path }} | tee full_plan_output
+          cat full_plan_output >> $GITHUB_STEP_SUMMARY
+      ## Should extract this into a composite action
       - name: Save Plan
         uses: actions/upload-artifact@v4
         with:

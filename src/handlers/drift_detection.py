@@ -6,7 +6,6 @@ from src.github import GitHub
 def drift_detection_handler(config):
     token = os.environ.get("INPUT_GITHUB_TOKEN")
     github = GitHub(token)
-    print(os.environ.get("INPUT_FILES"))
     files_changed = os.environ.get("INPUT_FILES").split('|')
 
     projects_to_run = config.get_projects_to_run(files_changed)

@@ -1,5 +1,4 @@
 import os
-import requests
 from src.github import GitHub
 
 
