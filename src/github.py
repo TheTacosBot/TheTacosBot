@@ -196,6 +196,7 @@ class GitHub:
         )
 
     def project_has_pending_deployment(self, project_name):
+        print(f"Getting deployments for {project_name}")
         resp = requests.get(
             f'https://api.github.com/repos/{self.org}/{self.repo}/deployments?enviroment={project_name}',
             headers=self.request_header
