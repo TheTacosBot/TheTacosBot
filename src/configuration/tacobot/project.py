@@ -16,7 +16,7 @@ class Project(BaseModel):
     )
 
     plan_path: str = Field(
-        uuid4(),
+        str(uuid4()),
         description="The path to the plan file for this project."
     )
 
