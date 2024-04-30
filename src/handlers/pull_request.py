@@ -20,7 +20,7 @@ def pull_request_handler(config):
         if deployment_id is not None and not is_this_pr:
             print(f"Found previously existing deployment for {project.name}. Skipping.")
             print(f"Deployment ID: {deployment_id}")
-            return
+            continue
         
         # We need to replace the existing deployment with a new one since the
         # sha and information changes.
