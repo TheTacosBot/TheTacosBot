@@ -215,15 +215,16 @@ class GitHub:
 
         deployment_status = self.get_deployment_status(latest_deployment['id'])
         # Can be one of error, failure, inactive, in_progress, queued pending, or success
-        print(deployment_status)
-        print(latest_deployment)
-        if deployment_status['state'] in ['queued', 'pending', 'in_progress']:
+        if deployment_status is not None and deployment_status['state'] in ['queued', 'pending', 'in_progress']:
             return latest_deployment['id'], latest_deployment['payload']['pr_number'] == self.pull_request_number
         return None, False
 
     def get_deployment_status(self, deployment_id):
         resp = requests.get(f"https://api.github.com/repos/{self.org}/{self.repo}/deployments/{deployment_id}/statuses", headers=self.request_header)
         resp.raise_for_status()
+
+        if len(resp.json()) == 0:
+            return None
         return resp.json()[0]
 
     def invoke_workflow_dispatch(self, workflow, ref, inputs):
