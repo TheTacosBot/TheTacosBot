@@ -204,9 +204,9 @@ class GitHub:
             headers=self.request_header
         )
 
-        print(deployments)
         resp.raise_for_status()
         deployments = resp.json()
+        print(deployments)
 
         if len(deployments) == 0:
             return None, False
