@@ -42,9 +42,9 @@ jobs:
           SHA=$(echo $DEPLOYMENT_INFO | jq -r .sha)
           PR_NUMBER=$(echo $DEPLOYMENT_INFO | jq -r .pr_number)
           PROJECT_NAME=$(echo $DEPLOYMENT_INFO | jq -r .project_name)
-          DIRECTORY=$(echo $DEPLOYMENT_INFO | jq -r .directory)
-          WORKFLOW=$(echo $DEPLOYMENT_INFO | jq -r .workflow)
-          PLAN_PATH=$(echo $DEPLOYMENT_INFO | jq -r .plan_path)
+          DIRECTORY=$(echo $DEPLOYMENT_INFO | jq -r .project.dir)
+          WORKFLOW=$(echo $DEPLOYMENT_INFO | jq -r .project.workflow)
+          PLAN_PATH=$(echo $DEPLOYMENT_INFO | jq -r .project.plan_path)
           echo "::set-output name=deployment_id::$DEPLOYMENT_ID"
           echo "::set-output name=sha::$SHA"
           echo "::set-output name=pr_number::$PR_NUMBER"
