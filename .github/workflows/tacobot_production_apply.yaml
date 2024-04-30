@@ -32,6 +32,9 @@ jobs:
       - name: Authenticate GitHub CLI
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+      - name: Validate Apply Requirements
+        run: |
+          gh pr view ${{ steps.get_deployment_info.outputs.pr_number }} --json mergeable | jq -r '.mergeable' | grep -q 'true' || exit 1
       - name: Retrieve GitHub Deployment for Workspace
         id: get_deployment_info
         run: |
@@ -39,12 +42,12 @@ jobs:
           DEPLOYMENT_ID=$(echo "$DEPLOYMENT_JSON" | jq -r '.id')
           DEPLOYMENT_INFO=$(echo "$DEPLOYMENT_JSON" | jq '.payload')
           echo "DEPLOYMENT_INFO=$DEPLOYMENT_INFO"
-          SHA=$(echo $DEPLOYMENT_INFO | jq -r fromjson.sha)
-          PR_NUMBER=$(echo $DEPLOYMENT_INFO | jq -r fromjson.pr_number)
-          PROJECT_NAME=$(echo $DEPLOYMENT_INFO | jq -r fromjson.project_name)
-          DIRECTORY=$(echo $DEPLOYMENT_INFO | jq -r fromjson.directory)
-          WORKFLOW=$(echo $DEPLOYMENT_INFO | jq -r fromjson.workflow)
-          PLAN_PATH=$(echo $DEPLOYMENT_INFO | jq -r fromjson.plan_path)
+          SHA=$(echo $DEPLOYMENT_INFO | jq -r .sha)
+          PR_NUMBER=$(echo $DEPLOYMENT_INFO | jq -r .pr_number)
+          PROJECT_NAME=$(echo $DEPLOYMENT_INFO | jq -r .project_name)
+          DIRECTORY=$(echo $DEPLOYMENT_INFO | jq -r .directory)
+          WORKFLOW=$(echo $DEPLOYMENT_INFO | jq -r .workflow)
+          PLAN_PATH=$(echo $DEPLOYMENT_INFO | jq -r .plan_path)
           echo "::set-output name=deployment_id::$DEPLOYMENT_ID"
           echo "::set-output name=sha::$SHA"
           echo "::set-output name=pr_number::$PR_NUMBER"
@@ -52,9 +55,6 @@ jobs:
           echo "::set-output name=directory::$DIRECTORY"
           echo "::set-output name=workflow::$WORKFLOW"
           echo "::set-output name=plan_path::$PLAN_PATH"
-      - name: Validate Apply Requirements
-        run: |
-          gh pr view ${{ steps.get_deployment_info.outputs.pr_number }} --json mergeable | jq -r '.mergeable' | grep -q 'true' || exit 1
       - name: Checkout
         uses: actions/checkout@v4
         with:
