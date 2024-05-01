@@ -4,8 +4,8 @@ inputs:
   name:
     description: 'Name of the TacoBot Project'
     required: true
-  full_plan_path:
-    description: 'Full plan path'
+  dir:
+    description: 'The working directory'
     required: true
   plan_file_name:
     description: 'Name of the plan file'
@@ -16,7 +16,8 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Run goodbye.sh
+    - name: Create Job Summary
+      working-directory: ${{ github.event.inputs.dir }}
       shell: bash
       run: |
           sed -i 's/\x1b\[[0-9;]*m//g' ${{ inputs.full_plan_path }}
@@ -31,7 +32,7 @@ runs:
       with:
         name: ${{ inputs.plan_file_name }}
         path: |
-          ${{ inputs.full_plan_path }}
+          ${{ inputs.dir }}/${{ inputs.plan_file_name}}
     - name: Authenticate GitHub CLI
       shell: bash
       run: |
@@ -44,9 +45,9 @@ runs:
         job_name: plan_terraform
     - name: Create status check
       shell: bash
-      working-directory: ${{ github.event.inputs.dir }}
+      working-directory: ${{ inputs.dir }}
       run: |
-        SUMMARY=$(cat ${{ inputs.full_plan_path }} | grep 'Plan:.*')
+        SUMMARY=$(cat ${{ inputs.plan_file_name }} | grep 'Plan:.*')
         POST_BODY='{
           "state": "success",
           "target_url": "${{ steps.job_id.outputs.html_url }}?check_suite_focus=true#step:6:1",

@@ -59,6 +59,6 @@ jobs:
         uses: ./.github/actions/plan_processing
         with:
           name: ${{ github.event.inputs.name }}
-          full_plan_path: ${{ github.event.inputs.dir }}/${{ github.event.inputs.plan_path }}
+          dir: ${{ github.event.inputs.dir }}
           plan_file_name: ${{ github.event.inputs.plan_path }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
