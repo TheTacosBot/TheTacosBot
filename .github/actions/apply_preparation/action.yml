@@ -59,7 +59,6 @@ runs:
       with:
         ref: ${{ steps.get_deployment_info.outputs.sha }}
     - name: Download artifact
-      shell: bash
       id: download-artifact
       uses: dawidd6/action-download-artifact@v3
       with:
