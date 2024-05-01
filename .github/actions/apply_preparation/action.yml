@@ -33,11 +33,11 @@ runs:
         if [ "${{ inputs.comment }}" ]; then
           COMMENT="${{ inputs.comment }}"
           PROJECT_NAME=$(echo "$COMMENT" | sed -n 's/.*--project \([^ ]*\).*/\1/p')
-          echo "project_name::$PROJECT_NAME" >> $GITHUB_OUTPUTS
+          echo "project_name::$PROJECT_NAME" >> $GITHUB_OUTPUT
           echo "No comment provided"
           exit 1
         else
-          echo "project_name=${{ inputs.project_name }}" >> $GITHUB_OUTPUTS
+          echo "project_name=${{ inputs.project_name }}" >> $GITHUB_OUTPUT
         fi
     - name: Authenticate GitHub CLI
       shell: bash
