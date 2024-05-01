@@ -1,10 +1,9 @@
-import subprocess
 import json
 import os
 import argparse
 import http.client
 
-def retrieve_deployment_information(repository, environment, github_token):
+def make_github_request(url, github_token):
     # Create a connection to the GitHub API server
     conn = http.client.HTTPSConnection("api.github.com")
 
@@ -12,16 +11,15 @@ def retrieve_deployment_information(repository, environment, github_token):
     
     # Prepare headers with authorization
     headers = {
-        'User-Agent': 'Python http.client',
+        'User-Agent': 'TheTacosBot',
         'Authorization': f'Bearer {github_token}',
-        'Accept': 'application/vnd.github.v3+json'
     }
 
     # Resource URL (for example, fetching user data for a specific username)
-    resource = f"/{repository}/deployments?environment={environment}"
+    resource = f"/repos/{repository}/deployments?environment={environment}"
 
     # Send a GET request
-    conn.request("GET", resource, headers=headers)
+    conn.request("GET", url, headers=headers)
 
     # Get the response from GitHub
     response = conn.getresponse()
@@ -32,16 +30,12 @@ def retrieve_deployment_information(repository, environment, github_token):
     # Close the connection
     conn.close()
 
-    # Print the response status and reason
-    print(f"Response Status: {response.status}")
-    print(f"Response Reason: {response.reason}")
-
     # Convert the JSON string to a Python dictionary and print it
     if response.status == 200:
         user_data = json.loads(data)
-        print(json.dumps(user_data, indent=4))
+        return user_data
     else:
-        print("Failed to retrieve data")
+        raise Exception("Failed to retrieve data")
 
 # Create the parser
 parser = argparse.ArgumentParser(description="Script to retrieve TacosBot deployment information.")
@@ -58,33 +52,40 @@ args = parser.parse_args()
 repository = args.repository
 environment = args.project_name
 
-retrieve_deployment_information(repository, environment, args.github_token)
-exit(1)
+deployments = make_github_request(f"/repos/{repository}/deployments?environment={environment}", args.github_token)
 
 
+first_deployment_without_success_status = None
+for deployment in deployments:
+    deployment_status = make_github_request(deployment['statuses_url'], args.github_token)
 
-
-if deployment:
-    deployment_id = deployment.get('id')
-    deployment_info = deployment.get('payload')
+    # A deployment has an array of statuses, we need to check if any of them are successful
+    # We do not want to return successful deployments as they have already been applied
+    deployment_has_success_status = False
+    for status in deployment_status:
+        assert 'state' in status, 'State not found in deployment status'
+        if status['state'] == 'success':
+            deployment_has_success_status = True
+            break
     
-    print(deployment_info)
-    exit(1)
-    # Extract fields from the payload
-    sha = deployment_info.get('sha')
-    pr_number = deployment_info.get('pr_number')
-    project_name = deployment_info.get('project_name')
-    directory = deployment_info.get('project', {}).get('dir')
-    workflow = deployment_info.get('project', {}).get('workflow')
-    plan_path = deployment_info.get('project', {}).get('plan_path')
-    
-    # Set outputs for other steps
+    if not deployment_has_success_status:
+        first_deployment_without_success_status = deployment
+        break
+
+if first_deployment_without_success_status == None:
+    raise Exception("Could not find any deployments that have not already been applied")
+
+assert 'payload' in first_deployment_without_success_status, 'Payload not found in deployment'
+
+deployment_info = first_deployment_without_success_status['payload']
+
+if 'GITHUB_OUTPUT' in os.environ:
     with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-        print(f'{name}={value}', file=fh)
-    os.system(f"echo 'deployment_id={deployment_id}' >> $GITHUB_ENV")
-    os.system(f"echo 'sha={sha}' >> $GITHUB_ENV")
-    os.system(f"echo 'pr_number={pr_number}' >> $GITHUB_ENV")
-    os.system(f"echo 'project_name={project_name}' >> $GITHUB_ENV")
-    os.system(f"echo 'directory={directory}' >> $GITHUB_ENV")
-    os.system(f"echo 'workflow={workflow}' >> $GITHUB_ENV")
-    os.system(f"echo 'plan_path={plan_path}' >> $GITHUB_ENV")
+        print(f'sha={deployment_info.get("sha")}', file=fh)
+        print(f'pr_number={deployment_info.get("pr_number")}', file=fh)
+        print(f'project_name={deployment_info.get("project_name")}', file=fh)
+
+        for key, value in deployment_info.get('project').items():
+            print(f'{key}={value}', file=fh)
+else:
+    print(json.dumps(deployment_info, indent=4))
