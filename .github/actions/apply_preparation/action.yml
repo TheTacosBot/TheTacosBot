@@ -3,7 +3,10 @@ description: 'Run this action before you run your Terraform Apply'
 inputs:
   comment:
     description: 'The comment that triggered the action'
-    required: true
+    required: false
+  project_name:
+    description: 'The name of the project'
+    required: false
   github_token:
     description: 'GitHub Token'
     required: true
@@ -27,36 +30,61 @@ runs:
       shell: bash
       id: get_project_name_from_comment
       run: |
-        COMMENT="${{ inputs.comment }}"
-        PROJECT_NAME=$(echo "$COMMENT" | sed -n 's/.*--project \([^ ]*\).*/\1/p')
-        echo "PROJECT_NAME=$PROJECT_NAME"
-        echo "::set-output name=project_name::$PROJECT_NAME"
+        if [ "${{ inputs.comment }}" ]; then
+          COMMENT="${{ inputs.comment }}"
+          PROJECT_NAME=$(echo "$COMMENT" | sed -n 's/.*--project \([^ ]*\).*/\1/p')
+          echo "project_name::$PROJECT_NAME" >> $GITHUB_OUTPUTS
+          echo "No comment provided"
+          exit 1
+        else
+          echo "project_name=${{ inputs.project_name }}" >> $GITHUB_OUTPUTS
+        fi
     - name: Authenticate GitHub CLI
       shell: bash
       run: |
         echo "${{ inputs.github_token }}" | gh auth login --with-token
     - name: Retrieve GitHub Deployment for Workspace
       id: get_deployment_info
-      shell: bash
+      shell: python
       run: |
-        # TODO: only retrieve the deployment if its state is not completed
-        DEPLOYMENT_JSON=$(gh api repos/${{ github.repository }}/deployments?environment=${{ steps.get_project_name_from_comment.outputs.project_name }} | jq '.[0]')
-        DEPLOYMENT_ID=$(echo "$DEPLOYMENT_JSON" | jq -r '.id')
-        DEPLOYMENT_INFO=$(echo "$DEPLOYMENT_JSON" | jq '.payload')
-        echo "DEPLOYMENT_INFO=$DEPLOYMENT_INFO"
-        SHA=$(echo $DEPLOYMENT_INFO | jq -r .sha)
-        PR_NUMBER=$(echo $DEPLOYMENT_INFO | jq -r .pr_number)
-        PROJECT_NAME=$(echo $DEPLOYMENT_INFO | jq -r .project_name)
-        DIRECTORY=$(echo $DEPLOYMENT_INFO | jq -r .project.dir)
-        WORKFLOW=$(echo $DEPLOYMENT_INFO | jq -r .project.workflow)
-        PLAN_PATH=$(echo $DEPLOYMENT_INFO | jq -r .project.plan_path)
-        echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
-        echo "sha=$SHA" >> $GITHUB_OUTPUT
-        echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
-        echo "project_name=$PROJECT_NAME" >> $GITHUB_OUTPUT
-        echo "directory=$DIRECTORY" >> $GITHUB_OUTPUT
-        echo "workflow=$WORKFLOW" >> $GITHUB_OUTPUT
-        echo "plan_path=$PLAN_PATH" >> $GITHUB_OUTPUT
+        import subprocess
+        import json
+        import os
+
+        # Define the repository and environment
+        repository = "${{ github.repository }}"
+        environment = "${{ steps.get_project_name_from_comment.outputs.project_name }}"
+
+        # Run the gh API command
+        api_command = f"gh api repos/{repository}/deployments?environment={environment}"
+        result = subprocess.run(api_command, shell=True, capture_output=True, text=True)
+        deployments = json.loads(result.stdout)
+        
+        # Get the first deployment
+        deployment = deployments[0] if deployments else None
+        
+        if deployment:
+            deployment_id = deployment.get('id')
+            deployment_info = deployment.get('payload')
+            
+            # Extract fields from the payload
+            sha = deployment_info.get('sha')
+            pr_number = deployment_info.get('pr_number')
+            project_name = deployment_info.get('project_name')
+            directory = deployment_info.get('project', {}).get('dir')
+            workflow = deployment_info.get('project', {}).get('workflow')
+            plan_path = deployment_info.get('project', {}).get('plan_path')
+            
+            # Set outputs for other steps
+            with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+                print(f'{name}={value}', file=fh)
+            os.system(f"echo 'deployment_id={deployment_id}' >> $GITHUB_ENV")
+            os.system(f"echo 'sha={sha}' >> $GITHUB_ENV")
+            os.system(f"echo 'pr_number={pr_number}' >> $GITHUB_ENV")
+            os.system(f"echo 'project_name={project_name}' >> $GITHUB_ENV")
+            os.system(f"echo 'directory={directory}' >> $GITHUB_ENV")
+            os.system(f"echo 'workflow={workflow}' >> $GITHUB_ENV")
+            os.system(f"echo 'plan_path={plan_path}' >> $GITHUB_ENV")
     - name: Checkout
       uses: actions/checkout@v4
       with:

@@ -9,8 +9,6 @@ def pull_request_handler(config):
 
     projects_to_run = config.get_projects_to_run(files_changed)
 
-    # TODO: how to notify user if no projects have changed
-
     # TODO: add ability to trigger plans for modules (i.e. atlantis autoplan feature)
     # Iterate over the projects and execute them
     for _, project in projects_to_run.items():

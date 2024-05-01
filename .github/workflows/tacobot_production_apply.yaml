@@ -11,6 +11,11 @@ permissions:
 on:
   issue_comment:                                     
     types: [created]
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: 'Name of the TacoBot Project'
+        required: true
 
 concurrency:
   group: tacosbot-${{ github.event.inputs.name }}-apply
@@ -30,6 +35,7 @@ jobs:
         with:
           comment: ${{ github.event.comment.body }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          project_name: ${{ github.event.inputs.project_name }}
 
       # Steps below are configurable by the user
       - name: Validate Apply Requirements
