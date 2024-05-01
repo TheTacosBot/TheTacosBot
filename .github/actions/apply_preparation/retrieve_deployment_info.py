@@ -81,6 +81,7 @@ deployment_info = first_deployment_without_success_status['payload']
 
 if 'GITHUB_OUTPUT' in os.environ:
     with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+        print(f'deployment_id={first_deployment_without_success_status.get("id")}', file=fh)
         print(f'sha={deployment_info.get("sha")}', file=fh)
         print(f'pr_number={deployment_info.get("pr_number")}', file=fh)
         print(f'project_name={deployment_info.get("project_name")}', file=fh)
