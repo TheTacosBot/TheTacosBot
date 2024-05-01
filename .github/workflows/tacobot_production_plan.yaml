@@ -56,7 +56,9 @@ jobs:
         run: |
           terraform plan -out=${{ github.event.inputs.plan_path }} | tee full_plan_output
           sed -i 's/\x1b\[[0-9;]*m//g' full_plan_output
+          echo "```hcl" >> $GITHUB_STEP_SUMMARY
           cat full_plan_output >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
       ## Should extract this into a composite action
       - name: Save Plan
         uses: actions/upload-artifact@v4
