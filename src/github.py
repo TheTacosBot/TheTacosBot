@@ -66,7 +66,7 @@ class GitHub:
             headers=self.request_header,
             json={
                 'state': 'error',
-                'description': 'TacoBot is currently running a plan for this PR. Please wait for it to complete.',
+                'description': 'TheTacosBot is currently running a plan for this PR. Please wait for it to complete.',
                 'target_url': f"https://github.com/{self.org}/{self.repo}/pull/{pr_number}",
                 'context': context
             }
