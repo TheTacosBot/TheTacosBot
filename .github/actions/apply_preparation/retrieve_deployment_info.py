@@ -13,7 +13,7 @@ def retrieve_deployment_information(repository, environment, github_token):
     # Prepare headers with authorization
     headers = {
         'User-Agent': 'Python http.client',
-        'Authorization': f'token {github_token}',
+        'Authorization': f'Bearer {github_token}',
         'Accept': 'application/vnd.github.v3+json'
     }
 

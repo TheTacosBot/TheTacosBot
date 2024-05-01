@@ -48,8 +48,6 @@ runs:
       shell: bash
       working-directory: ${{ github.action_path }}
       run: |
-        pwd
-        ls
         python retrieve_deployment_info.py \
           --repository ${{ github.repository }} \
           --project-name ${{ steps.get_project_name_from_comment.outputs.project_name }} \
