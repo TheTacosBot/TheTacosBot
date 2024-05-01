@@ -24,7 +24,7 @@ concurrency:
 
 jobs:
   apply_terraform:
-    if: ${{ github.event.issue.pull_request }}
+    if: ${{ github.event.issue.pull_request || github.event.inputs.project_name }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
