@@ -5,9 +5,6 @@ inputs:
   config_file:
     description: "Pull Request Comment to perform Terrahaxs Command"
     required: true
-  taco_type:
-    description: "Type of TACO workflow"
-    required: true
   github_token:
     description: "GitHub Token"
     required: true
@@ -28,6 +25,11 @@ runs:
         pip install -r requirements.txt
     - name: Run TacoBot
       shell: bash
+      env:
+        INPUT_CONFIG_FILE: ${{ inputs.config_file }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github_token }}
+        INPUT_DRIFT_DETECTION: ${{ inputs.drift_detection }}
+        INPUT_FILES: ${{ inputs.files }}
       run: |
         pwd
         ls -lah
