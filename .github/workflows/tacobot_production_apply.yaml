@@ -51,7 +51,7 @@ jobs:
         id: apply_terraform
         run: |
           cd ${{ steps.prepare.outputs.directory }}
-          terraform apply -auto-approve plan | tee $GITHUB_STEP_SUMMARY
+          terraform apply -no-color -auto-approve plan | tee $GITHUB_STEP_SUMMARY
       # End of configurable steps
 
       # All steps below should be run

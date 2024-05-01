@@ -49,13 +49,13 @@ runs:
         DIRECTORY=$(echo $DEPLOYMENT_INFO | jq -r .project.dir)
         WORKFLOW=$(echo $DEPLOYMENT_INFO | jq -r .project.workflow)
         PLAN_PATH=$(echo $DEPLOYMENT_INFO | jq -r .project.plan_path)
-        echo "::set-output name=deployment_id::$DEPLOYMENT_ID"
-        echo "::set-output name=sha::$SHA"
-        echo "::set-output name=pr_number::$PR_NUMBER"
-        echo "::set-output name=project_name::$PROJECT_NAME"
-        echo "::set-output name=directory::$DIRECTORY"
-        echo "::set-output name=workflow::$WORKFLOW"
-        echo "::set-output name=plan_path::$PLAN_PATH"
+        echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+        echo "sha=$SHA" >> $GITHUB_OUTPUT
+        echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+        echo "project_name=$PROJECT_NAME" >> $GITHUB_OUTPUT
+        echo "directory=$DIRECTORY" >> $GITHUB_OUTPUT
+        echo "workflow=$WORKFLOW" >> $GITHUB_OUTPUT
+        echo "plan_path=$PLAN_PATH" >> $GITHUB_OUTPUT
     - name: Checkout
       uses: actions/checkout@v4
       with:
