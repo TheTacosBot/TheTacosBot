@@ -48,7 +48,7 @@ parser = argparse.ArgumentParser(description="Script to retrieve TacosBot deploy
 
 # Add arguments
 parser.add_argument("--repository", type=str, help="The repository to retrieve the deployment information from (i.e. TheTacosBot/tacos-bot)")
-parser.add_argument("--name", type=str, help="The TacosBot project name to apply (i.e. dir:workflow)")
+parser.add_argument("--project_name", type=str, help="The TacosBot project name to apply (i.e. dir:workflow)")
 parser.add_argument("--github-token", type=str, help="GitHub token to make authenticated request")
 
 # Parse the arguments
@@ -56,7 +56,7 @@ args = parser.parse_args()
 
 # Define the repository and environment
 repository = args.repository
-environment = args.name
+environment = args.project_name
 
 retrieve_deployment_information(repository, environment, args.github_token)
 exit(1)
