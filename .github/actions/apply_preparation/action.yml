@@ -46,8 +46,11 @@ runs:
     - name: Retrieve GitHub Deployment for Workspace
       id: get_deployment_info
       shell: bash
+      working-directory: ${{ github.action_path }}
       run: |
-        python "$GITHUB_ACTION_PATH"/retrieve_deployment_info.py \
+        pwd
+        ls
+        python retrieve_deployment_info.py \
           --repository ${{ github.repository }} \
           --project_name ${{ steps.get_project_name_from_comment.outputs.project_name }} \
           --github_token ${{ inputs.github_token }}
