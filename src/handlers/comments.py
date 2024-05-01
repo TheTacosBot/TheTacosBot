@@ -29,16 +29,17 @@ def comment_handler(config):
     args = parser.parse_args(comment.replace('tacosbot ', '').split())
 
     if args.command == 'apply':
+        (project, workflow) = args.project.split(":")
         print(f"Applying changes to project: {args.project}")
-        project = config.get_matching_project(args.project)
-        github.invoke_workflow_dispatch(f"{project.workflow}_apply", github.head_branch, {'project_name': args.project})
+        github.invoke_workflow_dispatch(f"{workflow}_apply", github.head_branch, {'project_name': args.project})
     elif args.command == 'unlock':
         print(f"Unlocking project: {args.project}")
         (deployment, pr) = github.project_has_pending_deployment(args.project)
         github.delete_deployment(deployment_id=deployment)
     elif args.command == 'plan':
         print(f"Planning changes for project: {args.project}")
-        project = config.get_matching_project(args.project)
+        (project, workflow) = args.project.split(":")
+        project = config.get_matching_project(project)
         inputs = {
             'name': project.name,
             **project.dict(),
