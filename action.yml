@@ -29,4 +29,6 @@ runs:
     - name: Run TacoBot
       shell: bash
       run: |
+        pwd
+        ls
         python -m src.main
