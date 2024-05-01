@@ -20,6 +20,9 @@ runs:
     - name: Set deployment status
       shell: bash
       run: |
+        echo "I am here"
+        echo "${{ inputs.environment }}"
+        echo "${{ inputs.status }}"
         echo "${{ inputs.deployment_id}}"
         echo "${{ inputs.github_token }}" | gh auth login --with-token
         STATE="success"  # Can be one of error, failure, inactive, in_progress, queued pending, or success
