@@ -65,7 +65,7 @@ jobs:
           cat full_plan_output >> $GITHUB_STEP_SUMMARY
           echo "```" >> $GITHUB_STEP_SUMMARY
 
-          echo "$GITHUB_STEP_SUMMARY"
+          cat $GITHUB_STEP_SUMMARY
       ## Should extract this into a composite action
       - name: Save Plan
         uses: actions/upload-artifact@v4
