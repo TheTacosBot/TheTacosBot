@@ -45,46 +45,13 @@ runs:
         echo "${{ inputs.github_token }}" | gh auth login --with-token
     - name: Retrieve GitHub Deployment for Workspace
       id: get_deployment_info
-      shell: python
+      shell: bash
       run: |
-        import subprocess
-        import json
-        import os
+        python retrieve_deployment_info.py \
+          --repository ${{ github.repository }} \
+          --project_name ${{ steps.get_project_name_from_comment.outputs.project_name }} \
+          --github_token ${{ inputs.github_token }}
 
-        # Define the repository and environment
-        repository = "${{ github.repository }}"
-        environment = "${{ steps.get_project_name_from_comment.outputs.project_name }}"
-
-        # Run the gh API command
-        api_command = f"gh api repos/{repository}/deployments?environment={environment}"
-        result = subprocess.run(api_command, shell=True, capture_output=True, text=True)
-        deployments = json.loads(result.stdout)
-        
-        # Get the first deployment
-        deployment = deployments[0] if deployments else None
-        
-        if deployment:
-            deployment_id = deployment.get('id')
-            deployment_info = deployment.get('payload')
-            
-            # Extract fields from the payload
-            sha = deployment_info.get('sha')
-            pr_number = deployment_info.get('pr_number')
-            project_name = deployment_info.get('project_name')
-            directory = deployment_info.get('project', {}).get('dir')
-            workflow = deployment_info.get('project', {}).get('workflow')
-            plan_path = deployment_info.get('project', {}).get('plan_path')
-            
-            # Set outputs for other steps
-            with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-                print(f'{name}={value}', file=fh)
-            os.system(f"echo 'deployment_id={deployment_id}' >> $GITHUB_ENV")
-            os.system(f"echo 'sha={sha}' >> $GITHUB_ENV")
-            os.system(f"echo 'pr_number={pr_number}' >> $GITHUB_ENV")
-            os.system(f"echo 'project_name={project_name}' >> $GITHUB_ENV")
-            os.system(f"echo 'directory={directory}' >> $GITHUB_ENV")
-            os.system(f"echo 'workflow={workflow}' >> $GITHUB_ENV")
-            os.system(f"echo 'plan_path={plan_path}' >> $GITHUB_ENV")
     - name: Checkout
       uses: actions/checkout@v4
       with:
