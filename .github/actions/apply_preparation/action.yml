@@ -68,6 +68,6 @@ runs:
         github_token: ${{ inputs.github_token }}
     - name: Rename plan
       shell: bash
-      working-directory: ${{ steps.get_deployment_info.outputs.directory}}
+      working-directory: ${{ steps.get_deployment_info.outputs.dir }}
       run: |
         mv ${{ steps.get_deployment_info.outputs.plan_path}} plan
