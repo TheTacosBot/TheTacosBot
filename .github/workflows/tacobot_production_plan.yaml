@@ -55,44 +55,9 @@ jobs:
         working-directory: ${{ github.event.inputs.dir }}
         run: |
           terraform plan -out=${{ github.event.inputs.plan_path }} | tee full_plan_output
-          # We need to strip the color from the Terraform plan to prevent invalid
-          # characters from creating malformed JSON
-          sed -i 's/\x1b\[[0-9;]*m//g' full_plan_output
-          echo "### Terraform Plan" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`hcl" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "$(cat full_plan_output)" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-
-          cat $GITHUB_STEP_SUMMARY
-      ## Should extract this into a composite action
-      - name: Save Plan
-        uses: actions/upload-artifact@v4
+      - name: Process Terraform Plan
+        uses: ./.github/actions/plan_processing
         with:
-          name: ${{ github.event.inputs.plan_path }}
-          path: |
-            ${{ github.event.inputs.dir }}/${{ github.event.inputs.plan_path }}
-      - name: Authenticate GitHub CLI
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
-      - name: Get Current Job Log URL
-        uses: Tiryoh/gha-jobid-action@v1
-        id: job_id
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          job_name: plan_terraform
-      - name: Output Current Job Log URL
-        run: echo ${{ steps.jobs.outputs.html_url }}
-      - name: Create status check
-        working-directory: ${{ github.event.inputs.dir }}
-        run: |
-          SUMMARY=$(cat full_plan_output | grep 'Plan:.*')
-          POST_BODY='{
-            "state": "success",
-            "target_url": "${{ steps.job_id.outputs.html_url }}?check_suite_focus=true#step:6:1",
-            "description": "'$SUMMARY'",
-            "context": "${{ inputs.name }}"
-          }'
-
-          gh api repos/${{ github.repository }}/statuses/${{ github.sha }} --input - <<< "$POST_BODY"
+          name: ${{ github.event.inputs.name }}
+          full_plan_path: ${{ github.event.inputs.dir }}/${{ github.event.inputs.plan_path }}
+          plan_file_name: ${{ github.event.inputs.plan_path }}

@@ -1,0 +1,55 @@
+name: 'TacosBot Plan Processing'
+description: 'Run this action after you have created a Terraform Plan'
+inputs:
+  name:
+    description: 'Name of the TacoBot Project'
+    required: true
+  full_plan_path:
+    description: 'Full plan path'
+    required: true
+  plan_file_name:
+    description: 'Name of the plan file'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Run goodbye.sh
+      shell: bash
+      run: |
+          sed -i 's/\x1b\[[0-9;]*m//g' ${{ inputs.full_plan_path }}
+          echo "### Terraform Plan" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`hcl" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "$(cat ${{ inputs.full_plan_path }})" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+    - name: Save Plan
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.plan_file_name }}
+        path: |
+          ${{ inputs.full_plan_path }}
+    - name: Authenticate GitHub CLI
+      shell: bash
+      run: |
+        echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+    - name: Get Current Job Log URL
+      uses: Tiryoh/gha-jobid-action@v1
+      id: job_id
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        job_name: plan_terraform
+    - name: Create status check
+      shell: bash
+      working-directory: ${{ github.event.inputs.dir }}
+      run: |
+        SUMMARY=$(cat ${{ inputs.full_plan_path }} | grep 'Plan:.*')
+        POST_BODY='{
+          "state": "success",
+          "target_url": "${{ steps.job_id.outputs.html_url }}?check_suite_focus=true#step:6:1",
+          "description": "'$SUMMARY'",
+          "context": "${{ inputs.name }}"
+        }'
+
+        gh api repos/${{ github.repository }}/statuses/${{ github.sha }} --input - <<< "$POST_BODY"
+
