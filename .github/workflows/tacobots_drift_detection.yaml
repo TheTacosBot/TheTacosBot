@@ -23,7 +23,6 @@ jobs:
       - name: Run TacoBot
         uses: ./
         with:
-          taco_type: atlantis
           config_file: .tacobot.yaml
           github_token: ${{ github.token }}
           drift_detection: true

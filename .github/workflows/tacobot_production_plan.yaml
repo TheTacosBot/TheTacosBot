@@ -13,7 +13,7 @@ permissions:
 # If a new run is triggered while one is in progress, the in-progress run is cancelled.
 concurrency:
   group: tacosbot-${{ github.event.inputs.name }}-plan
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 # Triggers the workflow manually via the GitHub UI with specific inputs.
 on:
@@ -29,7 +29,7 @@ on:
         description: 'Path to save the Terraform plan' # Defines where to save the Terraform execution plan.
         required: true
       workflow:
-        description: 'TacoBot Workflow' # Optionally specifies a particular workflow within the project.
+        description: 'TacosBot Workflow' # Optionally specifies a particular workflow within the project.
         required: false
       terraform_version:
         description: 'Terraform Version' # Specifies the version of Terraform to use.
@@ -47,6 +47,7 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4 # Uses the checkout action to clone the repository.
+        # TODO: need to checkout the right branch/sha
 
       ## Steps below here are able to be customized based on specific needs
 
@@ -54,7 +55,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4 # Sets up AWS credentials from GitHub secrets.
         with:
           role-to-assume: arn:aws:iam::809929912595:role/GitHubActionRole # Specifies the AWS IAM role to assume.
-          role-session-name: tacobot # Sets the session name for the AWS credentials.
+          role-session-name: tacosbot # Sets the session name for the AWS credentials.
           aws-region: us-west-2 # Configures the AWS region for the actions.
           disable-retry: true # Disables retry logic on AWS API calls.
 
@@ -70,7 +71,7 @@ jobs:
 
       ## End of customizable steps
 
-      ## The following steps are common to all TacoBots workflows and should not be modified.
+      ## The following steps are common to all TacosBot workflows and should not be modified.
       - name: Process Terraform Plan
         uses: ./.github/actions/plan_processing # Uses a custom GitHub Action to process the generated Terraform plan.
         with:

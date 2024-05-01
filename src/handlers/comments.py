@@ -34,7 +34,7 @@ def comment_handler(config):
         github.invoke_workflow_dispatch(f"{workflow}_apply", github.default_branch, {'project_name': args.project})
     elif args.command == 'unlock':
         print(f"Unlocking project: {args.project}")
-        (deployment, pr) = github.project_has_pending_deployment(args.project)
+        (deployment, _) = github.project_has_pending_deployment(args.project)
         github.delete_deployment(deployment_id=deployment)
     elif args.command == 'plan':
         print(f"Planning changes for project: {args.project}")
