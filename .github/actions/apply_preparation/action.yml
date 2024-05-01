@@ -54,7 +54,6 @@ runs:
         echo "::set-output name=workflow::$WORKFLOW"
         echo "::set-output name=plan_path::$PLAN_PATH"
     - name: Checkout
-      shell: bash
       uses: actions/checkout@v4
       with:
         ref: ${{ steps.get_deployment_info.outputs.sha }}
