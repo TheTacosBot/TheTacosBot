@@ -17,13 +17,10 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Authenticate GitHub CLI
-      shell: bash
-      run: |
-        echo "${{ inputs.github_token }}" | gh auth login --with-token
     - name: Set deployment status
       shell: bash
       run: |
+        echo "${{ inputs.github_token }}" | gh auth login --with-token
         STATE="success"  # Can be one of error, failure, inactive, in_progress, queued pending, or success
         gh api -X POST /repos/${{ github.repository }}/deployments/${{ inputs.deployment-id }}/statuses \
           -f state="$STATE" \
