@@ -10,6 +10,9 @@ inputs:
   plan_file_name:
     description: 'Name of the plan file'
     required: true
+  github_token:
+    description: 'GitHub Token'
+    required: true
 runs:
   using: "composite"
   steps:
@@ -32,12 +35,12 @@ runs:
     - name: Authenticate GitHub CLI
       shell: bash
       run: |
-        echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+        echo "${{ inputs.github_token }}" | gh auth login --with-token
     - name: Get Current Job Log URL
       uses: Tiryoh/gha-jobid-action@v1
       id: job_id
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        github_token: ${{ inputs.github_token }}
         job_name: plan_terraform
     - name: Create status check
       shell: bash

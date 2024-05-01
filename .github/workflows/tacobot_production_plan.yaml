@@ -61,3 +61,4 @@ jobs:
           name: ${{ github.event.inputs.name }}
           full_plan_path: ${{ github.event.inputs.dir }}/${{ github.event.inputs.plan_path }}
           plan_file_name: ${{ github.event.inputs.plan_path }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
