@@ -59,6 +59,10 @@ jobs:
           terraform apply -no-color -auto-approve plan | tee $GITHUB_STEP_SUMMARY
       # End of configurable steps
 
+      # This is only needed for Tacobot to get the latest version
+      # of the action. Once this is merged, it can be removed.
+      - name: Checkout
+        uses: actions/checkout@v4
       # All steps below should be run
       - name: Set Deployment Status
         uses: ./.github/actions/update_deployment_status
