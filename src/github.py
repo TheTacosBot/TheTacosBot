@@ -171,12 +171,12 @@ class GitHub:
                     'sha': self.sha,
                     'pr_number': self.pull_request_number,
                     'project_name': project.name,
-                    **project.dict()
                 }
             }
         )
 
         resp.raise_for_status()
+        print(f"Created deployment for {project.name}. ID: {resp.json()['id']}")
         return resp.json()['id']
     
     def delete_deployment(self, deployment_id):
@@ -196,26 +196,35 @@ class GitHub:
         )
 
     def project_has_pending_deployment(self, project_name):
+        print(f"Getting deployments for {project_name}")
         resp = requests.get(
-            f'https://api.github.com/repos/{self.org}/{self.repo}/deployments?enviroment={project_name}',
+            f'https://api.github.com/repos/{self.org}/{self.repo}/deployments?environment={project_name}',
             headers=self.request_header
         )
 
+        resp.raise_for_status()
         deployments = resp.json()
 
         if len(deployments) == 0:
             return None, False
 
         latest_deployment = deployments[0]
+        assert 'id' in latest_deployment, "Deployment ID not found in deployment"
+        assert 'payload' in latest_deployment, "Payload not found in deployment"
+        assert 'pr_number' in latest_deployment['payload'], "PR Number not found in deployment payload"
 
         deployment_status = self.get_deployment_status(latest_deployment['id'])
         # Can be one of error, failure, inactive, in_progress, queued pending, or success
-        if deployment_status['state'] in ['queued', 'pending', 'in_progress']:
+        if deployment_status is not None and deployment_status['state'] in ['queued', 'pending', 'in_progress']:
             return latest_deployment['id'], latest_deployment['payload']['pr_number'] == self.pull_request_number
         return None, False
 
     def get_deployment_status(self, deployment_id):
         resp = requests.get(f"https://api.github.com/repos/{self.org}/{self.repo}/deployments/{deployment_id}/statuses", headers=self.request_header)
+        resp.raise_for_status()
+
+        if len(resp.json()) == 0:
+            return None
         return resp.json()[0]
 
     def invoke_workflow_dispatch(self, workflow, ref, inputs):

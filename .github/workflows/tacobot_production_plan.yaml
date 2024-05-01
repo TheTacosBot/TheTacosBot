@@ -1,88 +1,81 @@
 name: Terraform Plan - Production
 
+# Defines the permissions needed for various GitHub Actions features,
+# such as cloning the repo, authenticating via OIDC, and updating statuses and deployments.
 permissions:
-  id-token: write # required for OIDC authentication with AWS
-  contents: read # required to clone the repo
-  statuses: write # required to create a status check
-  deployments: write # required to create a deployment
-  actions: read # required to get the job id to link the status to the correct job/log output
+  id-token: write # Allows the workflow to request an OIDC token for authenticating with AWS.
+  contents: read # Allows the workflow to clone the repository.
+  statuses: write # Allows the workflow to create and update status checks on commits.
+  deployments: write # Allows the workflow to create deployment statuses used in GitHub deployments.
+  actions: read # Allows the workflow to read actions data to link the status checks with the job logs.
 
+# Ensures that only one instance of the workflow runs for a particular project at a time.
+# If a new run is triggered while one is in progress, the in-progress run is cancelled.
 concurrency:
   group: tacosbot-${{ github.event.inputs.name }}-plan
   cancel-in-progress: true
 
+# Triggers the workflow manually via the GitHub UI with specific inputs.
 on:
   workflow_dispatch:
     inputs:
       name:
-        description: 'Name of the TacoBot Project'
+        description: 'Name of the TacoBot Project' # Describes the project for which Terraform will plan.
         required: true
       dir:
-        description: 'Directory to run Terraform'
+        description: 'Directory to run Terraform' # Specifies the directory where Terraform commands should be executed.
+        required: true
+      plan_path:
+        description: 'Path to save the Terraform plan' # Defines where to save the Terraform execution plan.
         required: true
       workflow:
-        description: 'TacoBot Workflow'
+        description: 'TacoBot Workflow' # Optionally specifies a particular workflow within the project.
         required: false
       terraform_version:
-        description: 'Terraform Version'
-        default: "1.1.7"
+        description: 'Terraform Version' # Specifies the version of Terraform to use.
+        default: "1.1.7" # Defaults to version 1.1.7 if not specified.
 
 jobs:
   plan_terraform:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # Specifies the type of runner that the job will execute on.
+
     steps:
       #- uses: hashicorp/setup-terraform@v3
       #  with:
       #    terraform_version: ${{ github.event.inputs.terraform_version }}
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::809929912595:role/GitHubActionRole
-          role-session-name: tacobot
-          aws-region: us-west-2
-          disable-retry: true
-      - name: Create unique plan path
-        id: create_plan_path
-        run: |
-          echo "::set-output name=plan_path::$(uuidgen)"
-      - name: Terraform Init
-        working-directory: ${{ github.event.inputs.dir }}
-        run: terraform init
-      - name: Terraform Plan
-        id: terraform_plan
-        working-directory: ${{ github.event.inputs.dir }}
-        run: terraform plan -out=${{ steps.create_plan_path.outputs.plan_path }} | tee full_plan_output
-      - name: Save Plan
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ steps.create_plan_path.outputs.plan_path }}
-          path: |
-            ${{ github.event.inputs.dir }}/${{ steps.create_plan_path.outputs.plan_path }}
-      - name: Authenticate GitHub CLI
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
-      - name: Get Current Job Log URL
-        uses: Tiryoh/gha-jobid-action@v1
-        id: job_id
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          job_name: plan_terraform
-      - name: Output Current Job Log URL
-        run: echo ${{ steps.jobs.outputs.html_url }}
-      - name: Create status check
-        working-directory: ${{ github.event.inputs.dir }}
-        run: |
-          # We need to strip the color from the Terraform plan to prevent invalid
-          # characters from creating malformed JSON
-          sed -i 's/\x1b\[[0-9;]*m//g' full_plan_output
-          SUMMARY=$(cat full_plan_output | grep 'Plan:.*')
-          POST_BODY='{
-            "state": "success",
-            "target_url": "${{ steps.job_id.outputs.html_url }}?check_suite_focus=true#step:6:1",
-            "description": "'$SUMMARY'",
-            "context": "${{ inputs.name }}"
-          }'
+      #  This step, currently commented out, sets up Terraform with the specified version.
 
-          gh api repos/${{ github.repository }}/statuses/${{ github.sha }} --input - <<< "$POST_BODY"
+      - name: Checkout
+        uses: actions/checkout@v4 # Uses the checkout action to clone the repository.
+
+      ## Steps below here are able to be customized based on specific needs
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4 # Sets up AWS credentials from GitHub secrets.
+        with:
+          role-to-assume: arn:aws:iam::809929912595:role/GitHubActionRole # Specifies the AWS IAM role to assume.
+          role-session-name: tacobot # Sets the session name for the AWS credentials.
+          aws-region: us-west-2 # Configures the AWS region for the actions.
+          disable-retry: true # Disables retry logic on AWS API calls.
+
+      - name: Terraform Init
+        working-directory: ${{ github.event.inputs.dir }} # Specifies the working directory for the Terraform init command.
+        run: terraform init # Initializes Terraform in the specified directory.
+
+      - name: Terraform Plan
+        id: terraform_plan # Identifies this step for reference in subsequent steps if needed.
+        working-directory: ${{ github.event.inputs.dir }} # Specifies the directory for running the Terraform plan.
+        run: |
+          terraform plan -out=${{ github.event.inputs.plan_path }} | tee full_plan_output # Generates a Terraform plan and outputs it to a file.
+
+      ## End of customizable steps
+
+      ## The following steps are common to all TacoBots workflows and should not be modified.
+      - name: Process Terraform Plan
+        uses: ./.github/actions/plan_processing # Uses a custom GitHub Action to process the generated Terraform plan.
+        with:
+          name: ${{ github.event.inputs.name }} # Passes the project name to the custom action.
+          dir: ${{ github.event.inputs.dir }} # Specifies the working directory.
+          terraform_output: full_plan_output # Specifies the name of the plan file.
+          terraform_plan: ${{ github.event.inputs.plan_path}} # Specifies the name of the plan file.
+          github_token: ${{ secrets.GITHUB_TOKEN }} # Uses a GitHub token for authentication in actions that require it.

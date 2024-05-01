@@ -10,7 +10,7 @@ permissions:
 
 on:
   issue_comment:                                     
-    types: [created, edited, deleted]
+    types: [created]
 
 concurrency:
   group: tacosbot-${{ github.event.inputs.name }}-apply
