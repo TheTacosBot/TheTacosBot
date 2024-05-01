@@ -76,5 +76,5 @@ jobs:
         with:
           name: ${{ github.event.inputs.name }} # Passes the project name to the custom action.
           dir: ${{ github.event.inputs.dir }} # Specifies the working directory.
-          plan_file_name: ${{ github.event.inputs.plan_path }} # Specifies the name of the plan file.
+          plan_file_name: full_plan_output # Specifies the name of the plan file.
           github_token: ${{ secrets.GITHUB_TOKEN }} # Uses a GitHub token for authentication in actions that require it.
