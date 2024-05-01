@@ -64,7 +64,7 @@ runs:
         pr: ${{ github.event.issue.pull_request.number }}
         workflow: ${{ steps.get_deployment_info.outputs.workflow }}_plan.yaml
         name: ${{ steps.get_deployment_info.outputs.plan_path }}
-        path: ${{ steps.get_deployment_info.outputs.directory }}
+        path: ${{ steps.get_deployment_info.outputs.dir }}
         github_token: ${{ inputs.github_token }}
     - name: Rename plan
       shell: bash
