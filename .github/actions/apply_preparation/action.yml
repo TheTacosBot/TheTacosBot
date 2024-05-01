@@ -17,6 +17,9 @@ outputs:
   project_name:
     description: Name of the TacosBot Project
     value: ${{ steps.get_deployment_info.outputs.project_name}}
+  pull_request_number: 
+    description: The PR number
+    value: ${{ steps.get_deployment_info.outputs.pr_number }}
 runs:
   using: "composite"
   steps:
