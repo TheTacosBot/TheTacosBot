@@ -12,8 +12,7 @@ def run():
         print(f"Loading configuration file: {config_file}")
         config = Config.load(config_file)
     except BaseException:
-        print("Failed to load configuration file.")
-        return
+        raise Exception(f"Failed to load configuration file: {config_file}")
 
     if event == "pull_request":
         pull_request_handler(config)

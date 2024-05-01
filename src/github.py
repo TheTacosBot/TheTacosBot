@@ -60,6 +60,19 @@ class GitHub:
             file_names = [f['filename'] for f in files_changed]
             return file_names
 
+    def create_locked_status_check(self, context, pr_number):
+        resp = requests.post(
+            f'https://api.github.com/repos/{self.org}/{self.repo}/statuses/{self.sha}',
+            headers=self.request_header,
+            json={
+                'state': 'error',
+                'description': 'TacoBot is currently running a plan for this PR. Please wait for it to complete.',
+                'target_url': f"https://github.com/{self.org}/{self.repo}/pulls/{pr_number}",
+                'context': context
+            }
+        )
+
+        resp.raise_for_status()
     def create_deployment(self, project):
         resp = requests.post(
             f'https://api.github.com/repos/{self.org}/{self.repo}/deployments',
@@ -111,7 +124,7 @@ class GitHub:
         deployments = resp.json()
 
         if len(deployments) == 0:
-            return None, False
+            return None, 0
 
         latest_deployment = deployments[0]
         assert 'id' in latest_deployment, "Deployment ID not found in deployment"
@@ -121,8 +134,8 @@ class GitHub:
         deployment_status = self.get_deployment_status(latest_deployment['id'])
         # Can be one of error, failure, inactive, in_progress, queued pending, or success
         if deployment_status is not None and deployment_status['state'] in ['queued', 'pending', 'in_progress']:
-            return latest_deployment['id'], latest_deployment['payload']['pr_number'] == self.pull_request_number
-        return None, False
+            return latest_deployment['id'], latest_deployment['payload']['pr_number']
+        return None, 0
 
     def get_deployment_status(self, deployment_id):
         resp = requests.get(f"https://api.github.com/repos/{self.org}/{self.repo}/deployments/{deployment_id}/statuses", headers=self.request_header)
