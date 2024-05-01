@@ -17,15 +17,15 @@ runs:
   using: "composite"
   steps:
     - name: Create Job Summary
-      working-directory: ${{ github.event.inputs.dir }}
+      working-directory: ${{ inputs.dir }}
       shell: bash
       run: |
-          sed -i 's/\x1b\[[0-9;]*m//g' ${{ inputs.full_plan_path }}
+          sed -i 's/\x1b\[[0-9;]*m//g' ${{ inputs.plan_file_name }}
           echo "### Terraform Plan" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`hcl" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "$(cat ${{ inputs.full_plan_path }})" >> $GITHUB_STEP_SUMMARY
+          echo "$(cat ${{ inputs.plan_file_name }})" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
     - name: Save Plan
       uses: actions/upload-artifact@v4
