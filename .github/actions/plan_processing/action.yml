@@ -7,7 +7,10 @@ inputs:
   dir:
     description: 'The working directory'
     required: true
-  plan_file_name:
+  terraform_plan:
+    description: 'The Terraform Plan'
+    required: true
+  terraform_output:
     description: 'Name of the plan file'
     required: true
   github_token:
@@ -20,19 +23,19 @@ runs:
       working-directory: ${{ inputs.dir }}
       shell: bash
       run: |
-          sed -i 's/\x1b\[[0-9;]*m//g' ${{ inputs.plan_file_name }}
+          sed -i 's/\x1b\[[0-9;]*m//g' ${{ inputs.terraform_output }}
           echo "### Terraform Plan" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`hcl" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "$(cat ${{ inputs.plan_file_name }})" >> $GITHUB_STEP_SUMMARY
+          echo "$(cat ${{ inputs.terraform_output }})" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
     - name: Save Plan
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ inputs.plan_file_name }}
+        name: ${{ inputs.terraform_plan }}
         path: |
-          ${{ inputs.dir }}/${{ inputs.plan_file_name}}
+          ${{ inputs.dir }}/${{ inputs.terraform_plan}}
     - name: Authenticate GitHub CLI
       shell: bash
       run: |
@@ -47,7 +50,7 @@ runs:
       shell: bash
       working-directory: ${{ inputs.dir }}
       run: |
-        SUMMARY=$(cat ${{ inputs.plan_file_name }} | grep 'Plan:.*')
+        SUMMARY=$(cat ${{ inputs.terraform_output }} | grep 'Plan:.*')
         POST_BODY='{
           "state": "success",
           "target_url": "${{ steps.job_id.outputs.html_url }}?check_suite_focus=true#step:6:1",
