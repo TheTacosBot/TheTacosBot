@@ -5,6 +5,7 @@ permissions:
   pull-requests: read
   actions: write
   deployments: write
+  statuses: write
 
 on:
   pull_request:
