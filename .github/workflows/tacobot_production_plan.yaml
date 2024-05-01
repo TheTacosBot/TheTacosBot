@@ -67,7 +67,6 @@ jobs:
         uses: Tiryoh/gha-jobid-action@v1
         id: job_id
         with:
-<<<<<<< Updated upstream
           github_token: ${{ secrets.GITHUB_TOKEN }}
           job_name: plan_terraform
       - name: Output Current Job Log URL
@@ -87,9 +86,3 @@ jobs:
           }'
 
           gh api repos/${{ github.repository }}/statuses/${{ github.sha }} --input - <<< "$POST_BODY"
-=======
-          name: ${{ github.event.inputs.name }} # Passes the project name to the custom action.
-          dir: ${{ github.event.inputs.dir }} # Specifies the working directory.
-          plan_file_name: full_plan_output # Specifies the name of the plan file. Note: this should be the human readable plan, not the result of -out
-          github_token: ${{ secrets.GITHUB_TOKEN }} # Uses a GitHub token for authentication in actions that require it.
->>>>>>> Stashed changes
