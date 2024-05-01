@@ -30,5 +30,5 @@ runs:
       shell: bash
       run: |
         pwd
-        ls
+        ls -lah
         python -m src.main

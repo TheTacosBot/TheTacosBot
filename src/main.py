@@ -6,9 +6,11 @@ from src.configuration.tacobot.configuration import Config
 
 def run():
     event = os.environ.get("GITHUB_EVENT_NAME")
+    config_file = os.environ.get("INPUT_CONFIG_FILE")
 
     try:
-        config = Config.load(os.environ.get("INPUT_CONFIG_FILE"))
+        print(f"Loading configuration file: {config_file}")
+        config = Config.load(config_file)
     except BaseException:
         print("Failed to load configuration file.")
         return

@@ -19,7 +19,7 @@ jobs:
       - name: Check my dir
         run: |
           pwd
-          ls
+          ls -lah
       - name: Run TacoBot
         uses: ./
         with:
