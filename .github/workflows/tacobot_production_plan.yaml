@@ -60,10 +60,10 @@ jobs:
           sed -i 's/\x1b\[[0-9;]*m//g' full_plan_output
           echo "### Terraform Plan" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "```hcl" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`hcl" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "$(cat full_plan_output)" >> $GITHUB_STEP_SUMMARY
-          echo "```" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
           cat $GITHUB_STEP_SUMMARY
       ## Should extract this into a composite action
