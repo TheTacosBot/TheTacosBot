@@ -14,7 +14,7 @@ def pull_request_handler(config):
     for _, project in projects_to_run.items():
         (deployment_id, blocking_pr) = github.project_has_pending_deployment(project.name)
 
-        if deployment_id is not None and not blocking_pr != github.pull_request_number:
+        if deployment_id is not None and blocking_pr != github.pull_request_number:
             print(f"Found previously existing deployment for {project.name} associated with a different pull request. Skipping.")
             print(f"Deployment ID: {deployment_id}")
             github.create_locked_status_check(project.name, blocking_pr)
