@@ -3,14 +3,11 @@ name: Terraform Apply - Production
 permissions:
   contents: read
   id-token: write
-  issues: read
   actions: read
   pull-requests: read
   deployments: write
 
 on:
-  issue_comment:                                     
-    types: [created]
   workflow_dispatch:
     inputs:
       project_name:
@@ -24,7 +21,6 @@ concurrency:
 
 jobs:
   apply_terraform:
-    if: ${{ github.event.issue.pull_request || github.event.inputs.project_name }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,7 +29,6 @@ jobs:
         id: prepare
         uses: ./.github/actions/apply_preparation
         with:
-          comment: ${{ github.event.comment.body }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           project_name: ${{ github.event.inputs.project_name }}
 
@@ -53,6 +48,10 @@ jobs:
         run: |
           cd ${{ steps.prepare.outputs.directory }}
           terraform init
+      - name: Select Terraform Workspace
+        run: |
+          cd ${{ steps.prepare.outputs.directory }}
+          terraform workspace select production || terraform workspace new production
       - name: Terraform Apply
         id: apply_terraform
         run: |

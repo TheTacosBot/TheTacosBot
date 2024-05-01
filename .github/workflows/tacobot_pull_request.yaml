@@ -5,10 +5,14 @@ permissions:
   pull-requests: read
   actions: write
   deployments: write
+  statuses: write
+  issues: read
 
 on:
   pull_request:
-    types: [opened, synchronize, edited]
+    types: [opened, synchronize, edited, closed]
+  issue_comment:                                     
+    types: [created]
 
 jobs:
   run:
@@ -19,6 +23,5 @@ jobs:
       - name: Run TacoBot
         uses: ./
         with:
-          taco_type: atlantis
           config_file: .tacobot.yaml
           github_token: ${{ github.token }}

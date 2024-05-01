@@ -17,6 +17,7 @@ class Config(BaseModel):
         try:
             loaded_config = None
 
+            print(path)
             with open(path) as stream:
                 loaded_config = yaml.safe_load(stream)
 
