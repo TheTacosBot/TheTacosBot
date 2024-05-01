@@ -146,7 +146,7 @@ class GitHub:
         return resp.json()[0]
 
     def invoke_workflow_dispatch(self, workflow, ref, inputs):
-        url = f"https://api.github.com/repos/{self.org}/{self.repo}/actions/workflows/{workflow}_plan.yaml/dispatches"
+        url = f"https://api.github.com/repos/{self.org}/{self.repo}/actions/workflows/{workflow}.yaml/dispatches"
         resp = requests.post(
             url,
             headers=self.request_header,

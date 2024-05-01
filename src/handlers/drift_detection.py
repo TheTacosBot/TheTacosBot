@@ -16,4 +16,4 @@ def drift_detection_handler(config):
             **project.dict(),
         }
         print(f"Invoking {project.workflow} for project: {project.name}")
-        github.invoke_workflow_dispatch(project.workflow, ref, inputs)
+        github.invoke_workflow_dispatch(f"{project.workflow}_plan", ref, inputs)

@@ -34,4 +34,4 @@ def pull_request_handler(config):
         deployment_id = github.create_deployment(project)
         github.update_deployment_status(deployment_id, 'pending', f'Creating deployment for {project.name}')
         print(f"Invoking {project.workflow} for project: {project.name}")
-        github.invoke_workflow_dispatch(project.workflow, github.head_branch, inputs)
+        github.invoke_workflow_dispatch(f"{project.workflow}_plan", github.head_branch, inputs)

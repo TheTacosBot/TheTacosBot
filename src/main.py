@@ -1,6 +1,7 @@
 import os
 from src.handlers.pull_request import pull_request_handler
 from src.handlers.drift_detection import drift_detection_handler
+from src.handlers.comments import comment_handler
 from src.configuration.tacobot.configuration import Config
 
 
@@ -16,6 +17,8 @@ def run():
 
     if event == "pull_request":
         pull_request_handler(config)
+    elif event == "issue_comment":
+        comment_handler(config)
     elif os.getenv("INPUT_DRIFT_DETECTION") != "":
         drift_detection_handler(config)
     else:

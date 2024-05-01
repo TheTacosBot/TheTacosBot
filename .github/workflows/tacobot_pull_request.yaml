@@ -6,10 +6,13 @@ permissions:
   actions: write
   deployments: write
   statuses: write
+  issues: read
 
 on:
   pull_request:
     types: [opened, synchronize, edited, closed]
+  issue_comment:                                     
+    types: [created]
 
 jobs:
   run:
