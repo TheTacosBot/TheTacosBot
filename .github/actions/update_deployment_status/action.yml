@@ -17,6 +17,10 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Authenticate GitHub CLI
+      shell: bash
+      run: |
+        echo "${{ inputs.github_token }}" | gh auth login --with-token
     - name: Set deployment status
       shell: bash
       run: |
