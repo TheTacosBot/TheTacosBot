@@ -55,11 +55,17 @@ jobs:
         working-directory: ${{ github.event.inputs.dir }}
         run: |
           terraform plan -out=${{ github.event.inputs.plan_path }} | tee full_plan_output
+          # We need to strip the color from the Terraform plan to prevent invalid
+          # characters from creating malformed JSON
           sed -i 's/\x1b\[[0-9;]*m//g' full_plan_output
+          echo "### Terraform Plan" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo "```hcl" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           cat full_plan_output >> $GITHUB_STEP_SUMMARY
           echo "```" >> $GITHUB_STEP_SUMMARY
+
+          echo "$GITHUB_STEP_SUMMARY"
       ## Should extract this into a composite action
       - name: Save Plan
         uses: actions/upload-artifact@v4
@@ -81,8 +87,6 @@ jobs:
       - name: Create status check
         working-directory: ${{ github.event.inputs.dir }}
         run: |
-          # We need to strip the color from the Terraform plan to prevent invalid
-          # characters from creating malformed JSON
           SUMMARY=$(cat full_plan_output | grep 'Plan:.*')
           POST_BODY='{
             "state": "success",
