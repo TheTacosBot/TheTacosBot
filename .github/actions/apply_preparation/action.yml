@@ -61,7 +61,7 @@ runs:
       id: download-artifact
       uses: dawidd6/action-download-artifact@v3
       with:
-        pr: ${{ github.event.issue.pull_request.number }}
+        pr: ${{ steps.get_deployment_info.outputs.pr_number }}
         workflow: ${{ steps.get_deployment_info.outputs.workflow }}_plan.yaml
         name: ${{ steps.get_deployment_info.outputs.plan_path }}
         path: ${{ steps.get_deployment_info.outputs.dir }}
