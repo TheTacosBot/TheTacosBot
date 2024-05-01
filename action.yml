@@ -31,6 +31,4 @@ runs:
         INPUT_DRIFT_DETECTION: ${{ inputs.drift_detection }}
         INPUT_FILES: ${{ inputs.files }}
       run: |
-        pwd
-        ls -lah
         python -m src.main

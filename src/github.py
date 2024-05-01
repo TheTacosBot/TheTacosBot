@@ -67,7 +67,7 @@ class GitHub:
             json={
                 'state': 'error',
                 'description': 'TacoBot is currently running a plan for this PR. Please wait for it to complete.',
-                'target_url': f"https://github.com/{self.org}/{self.repo}/pulls/{pr_number}",
+                'target_url': f"https://github.com/{self.org}/{self.repo}/pull/{pr_number}",
                 'context': context
             }
         )
