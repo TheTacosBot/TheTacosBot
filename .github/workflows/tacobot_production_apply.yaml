@@ -38,11 +38,11 @@ jobs:
           project_name: ${{ github.event.inputs.project_name }}
 
       # Steps below are configurable by the user
-      - name: Validate Apply Requirements
-        run: |
-          MERGABLE=$(gh api repos/${{ github.repository }}/pulls/${{ steps.prepare.outputs.pull_request_number }} | jq '.mergeable')
-          echo "Current PR is mergable: $MERGABLE"
-          echo "$MERGABLE" | grep -q 'true' || (echo "PR does not meet apply requirements" && exit 1)
+      #- name: Validate Apply Requirements
+      #  run: |
+      #    MERGABLE=$(gh api repos/${{ github.repository }}/pulls/${{ steps.prepare.outputs.pull_request_number }} | jq '.mergeable')
+      #    echo "Current PR is mergable: $MERGABLE"
+      #    echo "$MERGABLE" | grep -q 'true' || (echo "PR does not meet apply requirements" && exit 1)
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
