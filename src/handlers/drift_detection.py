@@ -1,5 +1,4 @@
 import os
-import subprocess
 from src.github import GitHub
 
 

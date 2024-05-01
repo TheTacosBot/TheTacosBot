@@ -15,10 +15,6 @@ def run():
 
     if event == "pull_request":
         pull_request_handler(config)
-    elif event == "check_run":
-        pass
-    elif event == "issue_comment":
-        pass
     elif os.getenv("INPUT_DRIFT_DETECTION") != "":
         drift_detection_handler(config)
     else:
