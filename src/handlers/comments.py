@@ -31,7 +31,7 @@ def comment_handler(config):
     if args.command == 'apply':
         (project, workflow) = args.project.split(":")
         print(f"Applying changes to project: {args.project}")
-        github.invoke_workflow_dispatch(f"{workflow}_apply", github.head_branch, {'project_name': args.project})
+        github.invoke_workflow_dispatch(f"{workflow}_apply", github.default_branch, {'project_name': args.project})
     elif args.command == 'unlock':
         print(f"Unlocking project: {args.project}")
         (deployment, pr) = github.project_has_pending_deployment(args.project)

@@ -41,6 +41,10 @@ class GitHub:
     def head_branch(self):
         return self.event['pull_request']['head']['ref']
 
+    @property
+    def default_branch(self):
+        return self.event['repository']['default_branch']
+
     def pull_request_files_changed(self, drift_detection):
         if drift_detection is False:
             resp = requests.get(
