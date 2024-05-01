@@ -30,7 +30,7 @@ def comment_handler(config):
 
     if args.command == 'apply':
         print(f"Applying changes to project: {args.project}")
-        project = config.get_project(args.project)
+        project = config.get_matching_project(args.project)
         github.invoke_workflow_dispatch(f"{project.workflow}_apply", github.head_branch, {'project_name': args.project})
     elif args.command == 'unlock':
         print(f"Unlocking project: {args.project}")
@@ -38,5 +38,9 @@ def comment_handler(config):
         github.delete_deployment(deployment_id=deployment)
     elif args.command == 'plan':
         print(f"Planning changes for project: {args.project}")
-        project = config.get_project(args.project)
-        github.invoke_workflow_dispatch(f"{project.workflow}_plan", github.head_branch, {'project_name': args.project})
+        project = config.get_matching_project(args.project)
+        inputs = {
+            'name': project.name,
+            **project.dict(),
+        }
+        github.invoke_workflow_dispatch(f"{project.workflow}_plan", github.head_branch, inputs)
