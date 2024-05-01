@@ -22,43 +22,17 @@ jobs:
     if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     steps:
-      - name: Extract project name
-        id: get_project_name_from_comment
-        run: |
-          COMMENT="${{ github.event.comment.body }}"
-          PROJECT_NAME=$(echo "$COMMENT" | sed -n 's/.*--project \([^ ]*\).*/\1/p')
-          echo "PROJECT_NAME=$PROJECT_NAME"
-          echo "::set-output name=project_name::$PROJECT_NAME"
-      - name: Authenticate GitHub CLI
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
-      - name: Retrieve GitHub Deployment for Workspace
-        id: get_deployment_info
-        run: |
-          DEPLOYMENT_JSON=$(gh api repos/${{ github.repository }}/deployments?environment=${{ steps.get_project_name_from_comment.outputs.project_name }} | jq '.[0]')
-          DEPLOYMENT_ID=$(echo "$DEPLOYMENT_JSON" | jq -r '.id')
-          DEPLOYMENT_INFO=$(echo "$DEPLOYMENT_JSON" | jq '.payload')
-          echo "DEPLOYMENT_INFO=$DEPLOYMENT_INFO"
-          SHA=$(echo $DEPLOYMENT_INFO | jq -r .sha)
-          PR_NUMBER=$(echo $DEPLOYMENT_INFO | jq -r .pr_number)
-          PROJECT_NAME=$(echo $DEPLOYMENT_INFO | jq -r .project_name)
-          DIRECTORY=$(echo $DEPLOYMENT_INFO | jq -r .project.dir)
-          WORKFLOW=$(echo $DEPLOYMENT_INFO | jq -r .project.workflow)
-          PLAN_PATH=$(echo $DEPLOYMENT_INFO | jq -r .project.plan_path)
-          echo "::set-output name=deployment_id::$DEPLOYMENT_ID"
-          echo "::set-output name=sha::$SHA"
-          echo "::set-output name=pr_number::$PR_NUMBER"
-          echo "::set-output name=project_name::$PROJECT_NAME"
-          echo "::set-output name=directory::$DIRECTORY"
-          echo "::set-output name=workflow::$WORKFLOW"
-          echo "::set-output name=plan_path::$PLAN_PATH"
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Prepare to Apply
+        id: prepare
+        uses: ./.github/actions/apply_preparation
         with:
-          ref: ${{ steps.get_deployment_info.outputs.sha }}
+          comment: ${{ github.event.comment.body }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Steps below are configurable by the user
       - name: Validate Apply Requirements
         run: |
-          MERGABLE=$(gh api repos/${{ github.repository }}/pulls/${{ steps.get_deployment_info.outputs.pr_number }} | jq '.mergeable')
+          MERGABLE=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.issue.pull_request.number }} | jq '.mergeable')
           echo "Current PR is mergable: $MERGABLE"
           echo "$MERGABLE" | grep -q 'true' || (echo "PR does not meet apply requirements" && exit 1)
       - name: Configure AWS Credentials
@@ -67,30 +41,22 @@ jobs:
           role-to-assume: arn:aws:iam::809929912595:role/GitHubActionRole
           role-session-name: tacobot
           aws-region: us-west-2
-      - name: Download artifact
-        id: download-artifact
-        uses: dawidd6/action-download-artifact@v3
-        with:
-          pr: ${{ github.event.issue.pull_request.number }}
-          workflow: ${{ steps.get_deployment_info.outputs.workflow }}_plan.yaml
-          name: ${{ steps.get_deployment_info.outputs.plan_path }}
-          path: ${{ steps.get_deployment_info.outputs.directory }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Terraform Init
         run: |
-          cd ${{ steps.get_deployment_info.outputs.directory }}
+          cd ${{ steps.prepare.outputs.directory }}
           terraform init
       - name: Terraform Apply
         id: apply_terraform
         run: |
-          cd ${{ steps.get_deployment_info.outputs.directory }}
-          terraform apply -auto-approve ${{ steps.get_deployment_info.outputs.plan_path }}
-      - name: Set deployment status
-        run: |
-          STATE="success"  # Can be one of error, failure, inactive, in_progress, queued pending, or success
-          gh api -X POST /repos/${{ github.repository }}/deployments/${{ steps.get_deployment_info.outputs.deployment_id }}/statuses \
-            -f state="$STATE" \
-            -f log_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-            -f description="Deployment $STATE" \
-            -f environment="${{ steps.get_deployment_info.outputs.project_name }}"
-          echo "Deployment status set to $STATE"
+          cd ${{ steps.prepare.outputs.directory }}
+          terraform apply -auto-approve plan | $GITHUB_STEP_SUMMARY
+      # End of configurable steps
+
+      # All steps below should be run
+      - name: Set Deployment Status
+        uses: ./.github/actions/update_deployment_status
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          deployment_id: ${{ steps.prepare.outputs.deployment_id }}
+          status: success
+          environment: ${{ steps.prepare.outputs.project_name }}
