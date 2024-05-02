@@ -36,7 +36,10 @@ class GitHub:
         return self.event['pull_request']['head']['sha']
     @property
     def pull_request_number(self):
-        return self.event['pull_request']['number']
+        if 'pull_request' in self.event:
+            return self.event['pull_request']['number']
+        elif 'issue' in self.event:
+            return self.event['issue']['number']
 
     @property
     def head_branch(self):
@@ -164,3 +167,12 @@ class GitHub:
         if resp.status_code >= 400:
             print(resp.json())
         resp.raise_for_status()
+
+    def get_pr_information(self):
+        resp = requests.get(
+            f"https://api.github.com/repos/{self.org}/{self.repo}/pulls/{self.pull_request_number}",
+            headers=self.request_header
+        )
+
+        resp.raise_for_status()
+        return resp.json()

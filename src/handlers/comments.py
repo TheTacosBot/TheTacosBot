@@ -45,4 +45,7 @@ def comment_handler(config):
             'name': project.name,
             **asdict(project),
         }
-        github.invoke_workflow_dispatch(f"{project.workflow}_plan", github.head_branch, inputs)
+
+        pull_request_info = github.get_pr_information()
+        print(pull_request_info)
+        github.invoke_workflow_dispatch(f"{project.workflow}_plan", pull_request_info['pull_request']['head']['ref'], inputs)
