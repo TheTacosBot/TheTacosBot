@@ -1,4 +1,5 @@
 import os
+from dataclasses import asdict
 from src.github import GitHub
 
 
@@ -28,7 +29,7 @@ def pull_request_handler(config):
     
         inputs = {
             'name': project.name,
-            **project.dict(),
+            **asdict(project.dict),
         }
         print(f"Creating Deployment for {project.name}")
         deployment_id = github.create_deployment(project)

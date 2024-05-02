@@ -1,5 +1,6 @@
 import os
 import argparse
+from dataclasses import asdict
 from src.github import GitHub
 
 def comment_handler(config):
@@ -42,6 +43,6 @@ def comment_handler(config):
         project = config.get_matching_project(project)
         inputs = {
             'name': project.name,
-            **project.dict(),
+            **asdict(project.dict),
         }
         github.invoke_workflow_dispatch(f"{project.workflow}_plan", github.head_branch, inputs)
