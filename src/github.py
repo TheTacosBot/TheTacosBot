@@ -81,12 +81,12 @@ class GitHub:
         )
 
         resp.raise_for_status()
-    def create_deployment(self, project):
+    def create_deployment(self, project, head_branch=None):
         resp = requests.post(
             f'https://api.github.com/repos/{self.org}/{self.repo}/deployments',
             headers=self.request_header,
             json={
-                'ref': self.head_branch,
+                'ref': self.head_branch if head_branch is None else head_branch,
                 'environment': project.name,
                 'description': f'Terraform for {project.name}',
                 'auto_merge': False,

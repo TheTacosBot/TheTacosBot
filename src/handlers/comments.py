@@ -42,6 +42,8 @@ def comment_handler(config):
         project = config.get_matching_project(args.project)
         print(f"Matching project: {project}")
 
+        pull_request_info = github.get_pr_information()
+
         (deployment_id, blocking_pr) = github.project_has_pending_deployment(project.name)
         if deployment_id is not None and blocking_pr != github.pull_request_number:
             print(f"Found previously existing deployment for {project.name} associated with a different pull request. Skipping.")
@@ -55,12 +57,11 @@ def comment_handler(config):
             print(f"Found previously existing deployment with ID {deployment_id} for this PR. Removing it.")
             github.delete_deployment(deployment_id)
 
-        deployment_id = github.create_deployment(project)
+        deployment_id = github.create_deployment(project, head_branch=pull_request_info['head']['ref'])
         github.update_deployment_status(deployment_id, 'pending', f'Creating deployment for {project.name}')
         inputs = {
             'name': project.name,
             **asdict(project),
         }
 
-        pull_request_info = github.get_pr_information()
         github.invoke_workflow_dispatch(f"{project.workflow}_plan", pull_request_info['head']['ref'], inputs)
