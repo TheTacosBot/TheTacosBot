@@ -81,7 +81,7 @@ class GitHub:
         )
 
         resp.raise_for_status()
-    def create_deployment(self, project, head_branch=None):
+    def create_deployment(self, project, head_branch=None, sha=None, pr_number=None):
         resp = requests.post(
             f'https://api.github.com/repos/{self.org}/{self.repo}/deployments',
             headers=self.request_header,
@@ -93,8 +93,8 @@ class GitHub:
                 'required_contexts': [],
                 'payload': {
                     'project': asdict(project),
-                    'sha': self.sha,
-                    'pr_number': self.pull_request_number,
+                    'sha': self.sha if sha is None else sha,
+                    'pr_number': self.pull_request_number if pr_number is None else pr_number,
                     'project_name': project.name,
                 }
             }

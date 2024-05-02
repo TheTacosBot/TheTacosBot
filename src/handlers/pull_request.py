@@ -29,6 +29,7 @@ def pull_request_handler(config):
     
         inputs = {
             'name': project.name,
+            'sha': github.sha,
             **asdict(project),
         }
         print(f"Creating Deployment for {project.name}")

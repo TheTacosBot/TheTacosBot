@@ -57,10 +57,16 @@ def comment_handler(config):
             print(f"Found previously existing deployment with ID {deployment_id} for this PR. Removing it.")
             github.delete_deployment(deployment_id)
 
-        deployment_id = github.create_deployment(project, head_branch=pull_request_info['head']['ref'])
+        deployment_id = github.create_deployment(
+            project,
+            head_branch=pull_request_info['head']['ref'],
+            sha=pull_request_info['head']['sha'],
+            pr_number=github.pull_request_number
+        )
         github.update_deployment_status(deployment_id, 'pending', f'Creating deployment for {project.name}')
         inputs = {
             'name': project.name,
+            'sha': pull_request_info['head']['sha'],
             **asdict(project),
         }
 
