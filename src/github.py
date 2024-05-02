@@ -1,6 +1,7 @@
 import os
 import requests
 import json
+from dataclasses import asdict
 
 token_cache = {}
 
@@ -88,7 +89,7 @@ class GitHub:
                 'auto_merge': False,
                 'required_contexts': [],
                 'payload': {
-                    'project': project.dict(),
+                    'project': asdict(project),
                     'sha': self.sha,
                     'pr_number': self.pull_request_number,
                     'project_name': project.name,
