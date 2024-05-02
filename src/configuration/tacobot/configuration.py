@@ -28,17 +28,16 @@ class Config:
         """
         matching_project = None
         if '/' in project_name:
-            dir, workspace = project_name.split(':')
+            dir, workflow = project_name.split(':')
         else:
             dir = '.'
-            workspace = project_name
+            workflow = project_name
 
-        print(f"Search for matching project: {project_name} with workspace: {workspace} in dir: {dir}")
+        print(f"Search for matching project: {project_name} with workspace: {workflow} in dir: {dir}")
         for project in self.projects:
             print(f"Checking project: {project.name}")
             print(f"Project dir: {project.dir}")
-            print(f"Workspace: {project.workspace}")
-            if re.compile(f'^{project.dir}$').match(dir) and project.workspace == workspace:
+            if re.compile(f'^{project.dir}$').match(dir) and project.workflow == workflow:
                 matching_project = copy.deepcopy(project)
                 matching_project.dir = dir
                 matching_project.name = project_name
