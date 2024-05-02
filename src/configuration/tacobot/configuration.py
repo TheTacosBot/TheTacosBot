@@ -36,7 +36,7 @@ class Config:
             if re.compile(f'^{project.dir}$').match(dir) and project.workflow == workflow:
                 matching_project = copy.deepcopy(project)
                 matching_project.dir = dir
-                setattr(matching_project, 'name', project_name)
+                project.workflow = workflow
         return matching_project
 
     def get_projects_to_run(self, list_of_changed_files):
