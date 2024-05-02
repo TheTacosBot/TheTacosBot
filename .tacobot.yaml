@@ -1,3 +1,0 @@
-projects:
-  - dir: examples/gh_dir.*
-    workflow: tacobot_production
