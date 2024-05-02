@@ -33,9 +33,11 @@ class Config:
             dir = '.'
             workspace = project_name
 
-        print(f"Search for matching project: {project_name}")
+        print(f"Search for matching project: {project_name} with workspace: {workspace} in dir: {dir}")
         for project in self.projects:
             print(f"Checking project: {project.name}")
+            print(f"Project dir: {project.dir}")
+            print(f"Workspace: {project.workspace}")
             if re.compile(f'^{project.dir}$').match(dir) and project.workspace == workspace:
                 matching_project = copy.deepcopy(project)
                 matching_project.dir = dir
