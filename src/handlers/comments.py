@@ -41,12 +41,26 @@ def comment_handler(config):
         print(f"Planning changes for project: {args.project}")
         project = config.get_matching_project(args.project)
         print(f"Matching project: {project}")
+
+        (deployment_id, blocking_pr) = github.project_has_pending_deployment(project.name)
+        if deployment_id is not None and blocking_pr != github.pull_request_number:
+            print(f"Found previously existing deployment for {project.name} associated with a different pull request. Skipping.")
+            print(f"Deployment ID: {deployment_id}")
+            github.create_locked_status_check(project.name, blocking_pr)
+            return
+        
+        # We need to replace the existing deployment with a new one since the
+        # sha and information changes.
+        if deployment_id is not None and blocking_pr == github.pull_request_number:
+            print(f"Found previously existing deployment with ID {deployment_id} for this PR. Removing it.")
+            github.delete_deployment(deployment_id)
+
+        deployment_id = github.create_deployment(project)
+        github.update_deployment_status(deployment_id, 'pending', f'Creating deployment for {project.name}')
         inputs = {
             'name': project.name,
             **asdict(project),
         }
 
         pull_request_info = github.get_pr_information()
-        print("Pull Request Information")
-        print(pull_request_info)
         github.invoke_workflow_dispatch(f"{project.workflow}_plan", pull_request_info['head']['ref'], inputs)
