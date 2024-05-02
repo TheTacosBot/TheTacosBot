@@ -43,6 +43,6 @@ def comment_handler(config):
         project = config.get_matching_project(project)
         inputs = {
             'name': project.name,
-            **asdict(project.dict),
+            **asdict(project),
         }
         github.invoke_workflow_dispatch(f"{project.workflow}_plan", github.head_branch, inputs)

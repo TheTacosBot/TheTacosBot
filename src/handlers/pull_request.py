@@ -29,7 +29,7 @@ def pull_request_handler(config):
     
         inputs = {
             'name': project.name,
-            **asdict(project.dict),
+            **asdict(project),
         }
         print(f"Creating Deployment for {project.name}")
         deployment_id = github.create_deployment(project)
