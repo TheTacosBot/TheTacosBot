@@ -40,7 +40,9 @@ def comment_handler(config):
     elif args.command == 'plan':
         print(f"Planning changes for project: {args.project}")
         (project, workflow) = args.project.split(":")
+        print(f"Project: {project}, Workflow: {workflow}")
         project = config.get_matching_project(project)
+        print(f"Matching project: {project}")
         inputs = {
             'name': project.name,
             **asdict(project),
