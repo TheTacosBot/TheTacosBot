@@ -49,4 +49,4 @@ def comment_handler(config):
         pull_request_info = github.get_pr_information()
         print("Pull Request Information")
         print(pull_request_info)
-        github.invoke_workflow_dispatch(f"{project.workflow}_plan", pull_request_info['pull_request']['head']['ref'], inputs)
+        github.invoke_workflow_dispatch(f"{project.workflow}_plan", pull_request_info['head']['ref'], inputs)
