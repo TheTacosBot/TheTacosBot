@@ -27,11 +27,7 @@ class Config:
         Returns the last project where the dir matches the regex pattern
         """
         matching_project = None
-        if '/' in project_name:
-            dir, workflow = project_name.split(':')
-        else:
-            dir = '.'
-            workflow = project_name
+        dir, workflow = project_name.split(':')
 
         print(f"Search for matching project: {project_name} with workspace: {workflow} in dir: {dir}")
         for project in self.projects:
