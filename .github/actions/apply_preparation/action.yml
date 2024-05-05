@@ -11,9 +11,9 @@ inputs:
     description: 'GitHub Token'
     required: true
 outputs:
-  directory:
+  dir:
     description: "The directory to apply Terraform"
-    value: ${{ steps.get_deployment_info.outputs.directory }}
+    value: ${{ steps.get_deployment_info.outputs.dir }}
   deployment_id:
     description: "The ID of the deployment"
     value: ${{ steps.get_deployment_info.outputs.deployment_id }}
