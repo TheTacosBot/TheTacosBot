@@ -4,6 +4,8 @@ import copy
 from dataclasses import dataclass, field
 from typing import Optional, List
 from src.configuration.tacobot.project import Project
+from src.custom_exceptions import ProjectNotFoundError
+from src.logger import logger
 
 def load_yaml(path):
     with open(path, 'r') as file:
@@ -37,11 +39,20 @@ class Config:
                 matching_project = copy.deepcopy(project)
                 matching_project.dir = dir
                 project.workflow = workflow
+
+        if matching_project is None:
+            raise ProjectNotFoundError
+
         return matching_project
 
     def get_projects_to_run(self, list_of_changed_files):
+        """
+        Returns a dictionary of projects to run based on the list of changed files.
+        """
         projects_to_run = {}
         for config_project in self.projects:
+            logger.debug(f"Checking project: {config_project.name}")
             for project in config_project.regex_projects(list_of_changed_files):
+                logger.debug(f"Adding project: {project.name}")
                 projects_to_run[project.name] = project
         return projects_to_run

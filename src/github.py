@@ -49,7 +49,7 @@ class GitHub:
     def default_branch(self):
         return self.event['repository']['default_branch']
 
-    def pull_request_files_changed(self, drift_detection):
+    def pull_request_files_changed(self, drift_detection=False):
         if drift_detection is False:
             resp = requests.get(
                 f"https://api.github.com/repos/{self.org}/{self.repo}/pulls/{self.pull_request_number}/files?per_page=100",
