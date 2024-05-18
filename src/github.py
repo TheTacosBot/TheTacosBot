@@ -3,6 +3,7 @@ import requests
 import json
 from dataclasses import asdict
 from src.logger import logger
+from src.custom_exceptions import TooManyDispatchKeysError
 
 token_cache = {}
 
@@ -154,14 +155,17 @@ class GitHub:
             return None
         return resp.json()[0]
 
-    def invoke_workflow_dispatch(self, workflow, ref, inputs):
-        url = f"https://api.github.com/repos/{self.org}/{self.repo}/actions/workflows/{workflow}.yaml/dispatches"
+    def invoke_workflow_dispatch(self, event_type, inputs):
+        if len(inputs.keys()) > 10:
+            raise TooManyDispatchKeysError("Too many keys in the dispatch payload"
+
+        url = f"https://api.github.com/repos/{self.org}/{self.repo}/dispatches"
         resp = requests.post(
             url,
             headers=self.request_header,
             json={
-                'ref': ref,
-                'inputs': inputs
+                'event_type': event_type,
+                'client_payload': inputs
             }
         )
 

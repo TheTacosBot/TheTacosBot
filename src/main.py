@@ -52,6 +52,8 @@ if __name__ == "__main__": # pragma: no cover
     except UnsupportedEventError as e:
         print(f"Unsupported event type: {e}")
         exit(1)
+    except TooManyDispatchKeysError as e:
+        print("Too many dispatch keys provided. Please provide fewer than 10 dispatch keys. See GitHub documentation for more info: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#create-a-repository-dispatch-event")
     except Exception as e:
         print(f"An error occurred: {e}")
         exit(1)

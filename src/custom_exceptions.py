@@ -31,3 +31,8 @@ class ProjectLockedError(Exception):
     def __init__(self, message="Project is locked and cannot be deployed"):
         self.message = message
         super().__init__(self.message)
+
+class TooManyDispatchKeysError(Exception):
+    def __init__(self, message="Too many dispatch keys provided"):
+        self.message = message
+        super().__init__(self.message)
