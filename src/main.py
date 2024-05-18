@@ -5,32 +5,37 @@ from src.handlers.comments import comment_handler
 from src.configuration.tacobot.configuration import Config
 from src.custom_exceptions import *
 
+def validate_inputs():
+    if 'INPUT_GITHUB_TOKEN' not in os.environ or not os.environ['INPUT_GITHUB_TOKEN']:
+        raise GitHubTokenNotFoundError()
+    if 'INPUT_CONFIG_FILE' not in os.environ:
+        raise ConfigurationError("No configuration file specified")
+
+    event = os.environ.get("GITHUB_EVENT_NAME")
+
+    if event == 'issue_comment' and 'INPUT_COMMENT' not in os.environ:
+        raise CommentNotFoundError()
+
+def load_config():
+    config_file = os.environ.get("INPUT_CONFIG_FILE")
+    try:
+        # Load the configuration from the specified YAML file.
+        return Config.load(config_file)
+    except Exception as e:
+        raise ConfigurationError(config_file, str(e))
 def run():
     """
     Main function to handle different GitHub events triggered by actions.
 
     This function reads the GitHub event type from the environment and dispatches
     the event to its respective handler based on the configuration provided by the user.
-
-    Raises:
-        Exception: If the configuration file cannot be loaded or an unsupported event type is triggered.
     """
 
-    if 'INPUT_GITHUB_TOKEN' not in os.environ or not os.environ['INPUT_GITHUB_TOKEN']:
-        raise GitHubTokenNotFoundError
-    if 'INPUT_CONFIG_FILE' not in os.environ:
-        raise ConfigurationError("No configuration file specified")
-    
-    event = os.environ.get("GITHUB_EVENT_NAME")
-    config_file = os.environ.get("INPUT_CONFIG_FILE")
-
-    try:
-        # Load the configuration from the specified YAML file.
-        config = Config.load(config_file)
-    except Exception as e:
-        raise ConfigurationError(config_file, str(e))
+    validate_inputs()
+    config = load_config()
 
     # Dispatch the event to the appropriate handler.
+    event = os.environ.get("GITHUB_EVENT_NAME")
     if os.getenv("INPUT_DRIFT_DETECTION") == "true":
         drift_detection_handler(config)
     elif event == "pull_request":

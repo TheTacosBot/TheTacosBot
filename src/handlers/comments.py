@@ -2,32 +2,11 @@ import os
 import argparse
 from dataclasses import asdict
 from src.github import GitHub
-from src.custom_exceptions import CommentNotFoundError, ProjectLockedError
+from src.custom_exceptions import ProjectLockedError
 from src.logger import logger
 from src.handlers.locking import handle_locks
 
-def comment_handler(config):
-    """
-    Handles comments on pull requests to trigger specific project workflows based on the commands provided in the comment.
-
-    Args:
-        config (Config): The configuration object containing project rules and paths.
-
-    Raises:
-        AssertionError: If the expected environment variables or command prefixes are missing.
-    """
-
-    if 'INPUT_COMMENT' not in os.environ:
-        raise CommentNotFoundError
-    
-    comment = os.environ.get("INPUT_COMMENT")
-    token = os.environ.get("INPUT_GITHUB_TOKEN")
-    github = GitHub(token)
-
-    if not comment.lower().startswith('tacosbot'):
-        logger.info("Skipping comment, it does not contain a tacosbot command")
-        return
-
+def comment_parser(comment):
     parser = argparse.ArgumentParser(prog='tacosbot', description='TacosBot command line interface.')
 
     # Create a subparser object
@@ -45,7 +24,28 @@ def comment_handler(config):
     plan_parser = subparsers.add_parser('plan', help='Plan changes for a project')
     plan_parser.add_argument('--project', required=True, help='Project name to plan changes for')
 
-    args = parser.parse_args(comment.replace('tacosbot ', '').split())
+    return parser.parse_args(comment.replace('tacosbot ', '').split())
+
+def comment_handler(config):
+    """
+    Handles comments on pull requests to trigger specific project workflows based on the commands provided in the comment.
+
+    Args:
+        config (Config): The configuration object containing project rules and paths.
+
+    Raises:
+        AssertionError: If the expected environment variables or command prefixes are missing.
+    """
+
+    comment = os.environ.get("INPUT_COMMENT")
+    token = os.environ.get("INPUT_GITHUB_TOKEN")
+    github = GitHub(token)
+
+    if not comment.lower().startswith('tacosbot'):
+        logger.info("Skipping comment, it does not contain a tacosbot command")
+        return
+
+    args = comment_parser(comment)
 
     if args.command == 'apply':
         (project, workflow) = args.project.split(":")
