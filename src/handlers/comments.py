@@ -50,7 +50,7 @@ def comment_handler(config):
     if args.command == 'apply':
         (project, workflow) = args.project.split(":")
         logger.info(f"Applying changes to project: {args.project}")
-        github.invoke_workflow_dispatch(workflow, {'project_name': args.project})
+        github.invoke_workflow_dispatch(f'{workflow}_apply', {'project_name': args.project})
     elif args.command == 'unlock':
         logger.info(f"Unlocking project: {args.project}")
         (deployment, _) = github.project_has_pending_deployment(args.project)
@@ -81,4 +81,4 @@ def comment_handler(config):
             **asdict(project),
         }
 
-        github.invoke_workflow_dispatch(project.workflow, inputs)
+        github.invoke_workflow_dispatch(f'{project.workflow}_plan', inputs)

@@ -53,4 +53,4 @@ def pull_request_handler(config: Config):
 
         # Invoke the github action workflow for this project.
         logger.info(f"Invoking {project.workflow} for project: {project.name}")
-        github.invoke_workflow_dispatch(project.workflow, inputs)
+        github.invoke_workflow_dispatch(f'{project.workflow}_plan', inputs)
