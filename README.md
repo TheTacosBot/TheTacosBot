@@ -11,17 +11,15 @@ TheTacosBot is a GitHub Action based automation tool designed to manage Terrafor
 
 ### Getting Started
 
-Before you begin, ensure you have a GitHub account and administrative access to a repository where you plan to use TheTacosBot.
-
 #### Step 1: Configure GitHub Action
 
-Add the following GitHub Action workflow file to your repository under .github/workflows/tacosbot.yml:
+Add the following GitHub Action workflow file to your repository under `.github/workflows/tacosbot.yml`:
 
 ```yaml
 name: TacosBot
 
 permissions:
-  contents: read
+  contents: write # Needed to create repository dispatch event
   pull-requests: read
   actions: write
   deployments: write
@@ -40,11 +38,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            ${{ env.config_file }}
+          sparse-checkout-cone-mode: false
       - name: Run TacoBot
         uses: TheTacosBot/orchestrator@main
         with:
           config_file: .tacosbot.yaml # You can customize this name.
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ github.token }}
 ```
 
 #### Step 2: Create Configuration File
@@ -53,7 +55,7 @@ Create a .tacosbot.yaml in the root of your repository with the following conten
 
 ```yaml
 projects:
-  - dir: path_to_your_terraform_directory
+  - dir: terraform*
     workflow: tf
 ```
 
@@ -61,10 +63,10 @@ projects:
 
 Define workflows for handling Terraform plans and applies. For example, add two workflow files:
 
-* workflow_name_plan.yml for planning
-* workflow_name_apply.yml for applying changes
+* `workflow_name_plan.yml` for planning
+* `workflow_name_apply.yml` for applying changes
 
-Checkout the `examples` directory for example workflow files.
+Checkout the [example](examples/) directory for example workflow files.
 
 ### Usage
 
