@@ -23,3 +23,8 @@ Feature: TacosBot GitHub Actions Handling
         Given a pre-existing deployment for the project
         When a pull request is opened
         Then TacosBot doesn't trigger jobs
+    
+    Scenario: project locks are deleted when pull request is closed
+        Given a "closed" event for pull request
+        When the TacosBot processes the pull request
+        Then TacosBot deletes the locks for the project

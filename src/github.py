@@ -17,13 +17,9 @@ class GitHub:
 
         event_path = os.getenv("GITHUB_EVENT_PATH")
 
-        try:
-            with open(event_path, 'r') as file:
-                self.event = json.load(file)
-        except FileNotFoundError:
-            raise Exception("Event file not found")
-        except json.JSONDecodeError:
-            raise Exception("Could not parse event file.")
+        with open(event_path, 'r') as file:
+            self.event = json.load(file)
+
 
     @property
     def org(self):
@@ -32,6 +28,10 @@ class GitHub:
     @property
     def repo(self):
         return self.event['repository']['name']
+
+    @property
+    def action(self):
+        return self.event['action']
 
     @property
     def sha(self):
@@ -46,10 +46,6 @@ class GitHub:
     @property
     def head_branch(self):
         return self.event['pull_request']['head']['ref']
-
-    @property
-    def default_branch(self):
-        return self.event['repository']['default_branch']
 
     def pull_request_files_changed(self, drift_detection=False):
         if drift_detection is False:
@@ -181,3 +177,18 @@ class GitHub:
 
         resp.raise_for_status()
         return resp.json()
+    
+    def clear_deployments(self):
+        resp = requests.get(
+            f"https://api.github.com/repos/{self.org}/{self.repo}/deployments?sha={self.sha}",
+            headers=self.request_header
+        )
+
+        resp.raise_for_status()
+        deployments = resp.json()
+        for deployment in deployments:
+            status = self.get_deployment_status(deployment['id'])
+
+            if status is not None and status['state'] in ['queued', 'pending', 'in_progress']:
+                self.delete_deployment(deployment['id'])
+                logger.info(f"Deleted deployment {deployment['id']}")

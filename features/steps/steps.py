@@ -30,6 +30,8 @@ def step_impl(context):
 @given('a "{event_type}" event for pull request')
 def step_impl(context, event_type):
     context.event_type = event_type
+    if event_type == "closed":
+        os.environ['GITHUB_EVENT_PATH'] = "features/example_events/pull_request_closed.json"
     os.environ['GITHUB_EVENT_NAME'] = "pull_request"
 
 @when('the TacosBot processes the pull request')
@@ -103,9 +105,12 @@ def step_impl(context):
 
 @then("TacosBot triggers jobs")
 def step_impl(context):
-    print(context.m.last_request)
     assert 'dispatches' in context.m.last_request.url, context.m.last_request
 
 @then("TacosBot doesn't trigger jobs")
 def step_impl(context):
     assert context.m.last_request is None or 'dispatches' not in context.m.last_request.url, context.m.last_request
+
+@then("TacosBot deletes the locks for the project")
+def step_impl(context):
+    assert context.m.last_request.method == 'DELETE', context.m.last_request

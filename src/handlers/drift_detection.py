@@ -1,6 +1,7 @@
 import os
 from src.github import GitHub
 from dataclasses import asdict
+from src.logger import logger
 
 
 def drift_detection_handler(config):
@@ -15,5 +16,5 @@ def drift_detection_handler(config):
             'name': project.name,
             **asdict(project),
         }
-        print(f"Invoking {project.workflow} for project: {project.name}")
+        logger.info(f"Invoking {project.workflow} for project: {project.name}")
         github.invoke_workflow_dispatch(f"{project.workflow}_plan", inputs)

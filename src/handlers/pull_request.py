@@ -20,6 +20,11 @@ def pull_request_handler(config: Config):
 
     github = GitHub(token)
 
+    if github.action == 'closed':
+        logger.debug("Pull request is closed, clearing all locks.")
+        github.clear_deployments()
+        return
+
     try:
         files_changed = github.pull_request_files_changed()
     except Exception as e:
