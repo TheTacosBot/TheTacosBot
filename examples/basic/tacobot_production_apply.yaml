@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: Prepare to Apply
         id: prepare
-        uses: TheTacosBot/orchestrator/.github/actions/apply_preparation@main
+        uses: TheTacosBot/TheTacosBot/.github/actions/apply_preparation@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           project_name: ${{ github.event.client_payload.project_name }}
@@ -51,7 +51,7 @@ jobs:
 
       # All steps below should be run
       - name: Set Deployment Status
-        uses: TheTacosBot/orchestrator/.github/actions/update_deployment_status@main
+        uses: TheTacosBot/TheTacosBot/.github/actions/update_deployment_status@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           deployment_id: ${{ steps.prepare.outputs.deployment_id }}

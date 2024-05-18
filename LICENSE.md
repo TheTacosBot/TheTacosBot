@@ -2,7 +2,7 @@
 
 Contributor: Gabriel Levasseur
 
-Source Code: https://github.com/terrahaxs/orchestrator
+Source Code: https://github.com/TheTacosBot/TheTacosBot
 
 ## Purpose
 

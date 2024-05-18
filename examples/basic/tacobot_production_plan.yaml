@@ -59,7 +59,7 @@ jobs:
 
       ## The following steps are common to all TacosBot workflows and should not be modified.
       - name: Process Terraform Plan
-        uses: TheTacosBot/orchestrator/.github/actions/plan_processing@main # Uses a custom GitHub Action to process the generated Terraform plan.
+        uses: TheTacosBot/TheTacosBot/.github/actions/plan_processing@main # Uses a custom GitHub Action to process the generated Terraform plan.
         with:
           name: ${{ github.event.client_payload.name }} # Passes the project name to the custom action.
           dir: ${{ github.event.client_payload.dir }} # Specifies the working directory.

@@ -43,7 +43,7 @@ jobs:
             ${{ env.config_file }}
           sparse-checkout-cone-mode: false
       - name: Run TacoBot
-        uses: TheTacosBot/orchestrator@main
+        uses: TheTacosBot/TheTacosBot@main
         with:
           config_file: .tacosbot.yaml # You can customize this name.
           github_token: ${{ github.token }}

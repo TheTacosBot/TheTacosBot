@@ -28,7 +28,7 @@ jobs:
             ${{ env.config_file }}
           sparse-checkout-cone-mode: false
       - name: Run TacoBot
-        uses: TheTacosBot/orchestrator@main
+        uses: TheTacosBot/TheTacosBot@main
         with:
           config_file: ${{ env.config_file }}
           github_token: ${{ github.token }}

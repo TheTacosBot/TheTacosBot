@@ -21,7 +21,7 @@ jobs:
           FILES=$(git ls-tree --full-tree -r --name-only HEAD | tr '\n' '|' | sed 's/,$//')
           echo "::set-output name=files::$FILES"
       - name: Run TacoBot
-        uses: TheTacosBot/orchestrator@main
+        uses: TheTacosBot/TheTacosBot@main
         with:
           config_file: .tacobot.yaml
           github_token: ${{ github.token }}
