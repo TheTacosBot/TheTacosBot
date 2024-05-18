@@ -1,5 +1,6 @@
 import os
 from src.github import GitHub
+from dataclasses import asdict
 
 
 def drift_detection_handler(config):
@@ -9,11 +10,10 @@ def drift_detection_handler(config):
 
     projects_to_run = config.get_projects_to_run(files_changed)
 
-    ref = os.getenv("GITHUB_REF")
     for _, project in projects_to_run.items():
         inputs = {
             'name': project.name,
-            **project.dict(),
+            **asdict(project),
         }
         print(f"Invoking {project.workflow} for project: {project.name}")
-        github.invoke_workflow_dispatch(f"{project.workflow}_plan", ref, inputs)
+        github.invoke_workflow_dispatch(f"{project.workflow}_plan", inputs)

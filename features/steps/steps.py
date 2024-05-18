@@ -22,6 +22,11 @@ def step_impl(context):
         ]
     )
 
+@given("drift detection is enabled")
+def step_impl(context):
+    os.environ['INPUT_DRIFT_DETECTION'] = "true"
+    os.environ['INPUT_FILES'] = "examples/gh_dir0/main.tf"
+
 @given('a "{event_type}" event for pull request')
 def step_impl(context, event_type):
     context.event_type = event_type
@@ -45,7 +50,8 @@ def step_impl(context, expected_workflow):
         assert False, context.exception
     except AttributeError:
         pass
-    assert f'{expected_workflow}.yaml' in context.m.last_request.url, context.m.last_request.url
+    assert 'dispatches' in context.m.last_request.url, context.m.last_request.url
+    assert 'event_type' in context.m.last_request.json(), context.m.last_request.json()
 
 @given('a comment "{comment}" on the pull request')
 def step_impl(context, comment):

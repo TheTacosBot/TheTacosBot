@@ -31,12 +31,12 @@ def run():
         raise ConfigurationError(config_file, str(e))
 
     # Dispatch the event to the appropriate handler.
-    if event == "pull_request":
+    if os.getenv("INPUT_DRIFT_DETECTION") == "true":
+        drift_detection_handler(config)
+    elif event == "pull_request":
         pull_request_handler(config)
     elif event == "issue_comment":
         comment_handler(config)
-    elif os.getenv("INPUT_DRIFT_DETECTION") == "true":
-        drift_detection_handler(config)
     else:
         raise UnsupportedEventError(event)
 

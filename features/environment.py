@@ -4,8 +4,7 @@ import os
 def before_scenario(context, scenario):
     context.m = requests_mock.Mocker()
 
-    context.m.post("https://api.github.com/repos/Codertocat/Hello-World/actions/workflows/tacosbot_production_plan.yaml/dispatches")
-    context.m.post("https://api.github.com/repos/Codertocat/Hello-World/actions/workflows/tacosbot_production_apply.yaml/dispatches")
+    context.m.post("https://api.github.com/repos/Codertocat/Hello-World/dispatches")
     context.m.get(
         "https://api.github.com/repos/Codertocat/Hello-World/pulls/2/files?per_page=100",
         json=[{'filename': "examples/gh_dir0/main.tf"}])
@@ -21,3 +20,4 @@ def before_scenario(context, scenario):
 
 def after_scenario(context, scenario):
     os.environ['INPUT_GITHUB_TOKEN'] = ''
+    os.environ['INPUT_DRIFT_DETECTION'] = ''
