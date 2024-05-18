@@ -13,10 +13,21 @@ class UnsupportedEventError(Exception):
         super().__init__(self.message)
 
 class GitHubTokenNotFoundError(Exception):
-    pass
+    def __init__(self, message="GitHub token not found in the environment"):
+        self.message = message
+        super().__init__(self.message)
 
 class CommentNotFoundError(Exception):
-    pass
+    def __init__(self, message="Comment not found in the environment"):
+        self.message = message
+        super().__init__(self.message)
 
 class ProjectNotFoundError(Exception):
-    pass
+    def __init__(self, message="No project found matching the provided name"):
+        self.message = message
+        super().__init__(self.message)
+
+class ProjectLockedError(Exception):
+    def __init__(self, message="Project is locked and cannot be deployed"):
+        self.message = message
+        super().__init__(self.message)

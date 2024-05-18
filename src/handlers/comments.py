@@ -2,8 +2,9 @@ import os
 import argparse
 from dataclasses import asdict
 from src.github import GitHub
-from src.custom_exceptions import CommentNotFoundError, GitHubTokenNotFoundError
+from src.custom_exceptions import CommentNotFoundError, ProjectLockedError
 from src.logger import logger
+from src.handlers.locking import handle_locks
 
 def comment_handler(config):
     """
@@ -19,14 +20,11 @@ def comment_handler(config):
     if 'INPUT_COMMENT' not in os.environ:
         raise CommentNotFoundError
     
-    if 'INPUT_GITHUB_TOKEN' not in os.environ:
-        raise GitHubTokenNotFoundError
-
     comment = os.environ.get("INPUT_COMMENT")
     token = os.environ.get("INPUT_GITHUB_TOKEN")
     github = GitHub(token)
 
-    if 'tacosbot' not in comment.lower():
+    if not comment.lower().startswith('tacosbot'):
         logger.info("Skipping comment, it does not contain a tacosbot command")
         return
 
@@ -64,18 +62,11 @@ def comment_handler(config):
 
         pull_request_info = github.get_pr_information()
 
-        (deployment_id, blocking_pr) = github.project_has_pending_deployment(project.name)
-        if deployment_id is not None and blocking_pr != github.pull_request_number:
-            logger.info(f"Found previously existing deployment for {project.name} associated with a different pull request. Skipping.")
-            logger.info(f"Deployment ID: {deployment_id}")
-            github.create_locked_status_check(project.name, blocking_pr)
+        try:
+            handle_locks(project.name, github)
+        except ProjectLockedError as e:
+            logger.info(f"Project {project.name} is locked. Skipping.")
             return
-        
-        # We need to replace the existing deployment with a new one since the
-        # sha and information changes.
-        if deployment_id is not None and blocking_pr == github.pull_request_number:
-            logger.info(f"Found previously existing deployment with ID {deployment_id} for this PR. Removing it.")
-            github.delete_deployment(deployment_id)
 
         deployment_id = github.create_deployment(
             project,

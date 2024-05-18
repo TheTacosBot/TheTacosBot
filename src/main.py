@@ -3,7 +3,7 @@ from src.handlers.pull_request import pull_request_handler
 from src.handlers.drift_detection import drift_detection_handler
 from src.handlers.comments import comment_handler
 from src.configuration.tacobot.configuration import Config
-from src.custom_exceptions import ConfigurationError, UnsupportedEventError
+from src.custom_exceptions import *
 
 def run():
     """
@@ -15,6 +15,12 @@ def run():
     Raises:
         Exception: If the configuration file cannot be loaded or an unsupported event type is triggered.
     """
+
+    if 'INPUT_GITHUB_TOKEN' not in os.environ or not os.environ['INPUT_GITHUB_TOKEN']:
+        raise GitHubTokenNotFoundError
+    if 'INPUT_CONFIG_FILE' not in os.environ:
+        raise ConfigurationError("No configuration file specified")
+    
     event = os.environ.get("GITHUB_EVENT_NAME")
     config_file = os.environ.get("INPUT_CONFIG_FILE")
 
@@ -34,5 +40,18 @@ def run():
     else:
         raise UnsupportedEventError(event)
 
-if __name__ == "__main__":
-    run()
+if __name__ == "__main__": # pragma: no cover
+    try:
+        run()
+    except GitHubTokenNotFoundError:
+        print("GitHub token not found. Please set the GITHUB_TOKEN environment variable.")
+        exit(1)
+    except ConfigurationError as e:
+        print(f"Error loading configuration file: {e}")
+        exit(1)
+    except UnsupportedEventError as e:
+        print(f"Unsupported event type: {e}")
+        exit(1)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        exit(1)

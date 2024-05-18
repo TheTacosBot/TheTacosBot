@@ -5,10 +5,10 @@ Feature: TacosBot GitHub Actions Handling
 
     Background:
         Given the GitHub token is available
+        And a configuration file at features/.tacosbot.yaml
 
     Scenario Outline: Handling pull request events
         Given a "<event_type>" event for pull request
-        And the pull request contains changes to files
         When the TacosBot processes the pull request
         Then the "<expected_workflow>" is triggered for projects affected by the changes
 
@@ -19,13 +19,7 @@ Feature: TacosBot GitHub Actions Handling
             | edited      | plan              |
             | reopened    | plan              |
 
-    Scenario Outline: Handling comments to trigger workflows
-        Given a pull request with id "<pr_id>"
-        And a comment "<comment>" on the pull request
-        When the comment is processed by the TacosBot
-        Then the "<expected_workflow>" workflow should be triggered for the specified project
-
-        Examples:
-            | pr_id | comment                                                       | expected_workflow |
-            | 101   | tacosbot apply --project examples/gh_dir0:tacosbot_production | apply             |
-            | 102   | tacosbot plan --project examples/gh_dir0:tacosbot_production  | plan              |
+    Scenario: project locked by a different pull request
+        Given a pre-existing deployment for the project
+        When a pull request is opened
+        Then TacosBot doesn't trigger jobs

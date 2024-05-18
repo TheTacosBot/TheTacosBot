@@ -2,8 +2,9 @@ import os
 from dataclasses import asdict
 from src.github import GitHub
 from src.logger import logger
-from src.custom_exceptions import GitHubTokenNotFoundError
 from src.configuration.tacobot.configuration import Config
+from src.handlers.locking import handle_locks
+from src.custom_exceptions import ProjectLockedError
 
 
 def pull_request_handler(config: Config):
@@ -17,9 +18,6 @@ def pull_request_handler(config: Config):
     """
     token = os.environ.get("INPUT_GITHUB_TOKEN")
 
-    if token is None:
-        raise GitHubTokenNotFoundError
-    
     github = GitHub(token)
 
     try:
@@ -34,19 +32,11 @@ def pull_request_handler(config: Config):
     # TODO: add ability to trigger plans for modules (i.e. atlantis autoplan feature)
     # Iterate over the projects and execute them
     for _, project in projects_to_run.items():
-        (deployment_id, blocking_pr) = github.project_has_pending_deployment(project.name)
-
-        if deployment_id is not None and blocking_pr != github.pull_request_number:
-            logger.info(f"Found previously existing deployment for {project.name} associated with a different pull request. Skipping.")
-            logger.info(f"Deployment ID: {deployment_id}")
-            github.create_locked_status_check(project.name, blocking_pr)
+        try:
+            handle_locks(project.name, github)
+        except ProjectLockedError as e:
+            logger.info(f"Project {project.name} is locked. Skipping.")
             continue
-        
-        # We need to replace the existing deployment with a new one since the
-        # sha and information changes.
-        if deployment_id is not None and blocking_pr == github.pull_request_number:
-            logger.info(f"Found previously existing deployment with ID {deployment_id} for this PR. Removing it.")
-            github.delete_deployment(deployment_id)
     
         inputs = {
             'name': project.name,

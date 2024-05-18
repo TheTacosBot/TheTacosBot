@@ -2,6 +2,7 @@ import os
 import requests
 import json
 from dataclasses import asdict
+from src.logger import logger
 
 token_cache = {}
 
@@ -122,7 +123,7 @@ class GitHub:
         )
 
     def project_has_pending_deployment(self, project_name):
-        print(f"Getting deployments for {project_name}")
+        logger.debug(f"Getting deployments for {project_name}")
         resp = requests.get(
             f'https://api.github.com/repos/{self.org}/{self.repo}/deployments?environment={project_name}',
             headers=self.request_header

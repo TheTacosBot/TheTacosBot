@@ -1,0 +1,3 @@
+projects:
+  - dir: examples/gh_dir.*
+    workflow: tacosbot_production

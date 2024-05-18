@@ -10,13 +10,6 @@ class Project:
     workflow: str
     plan_path: str = field(default_factory=lambda: str(uuid4()))
 
-    def __post_init__(self):
-        # Add validation if necessary, for example:
-        if not self.dir:
-            raise ValueError("Directory cannot be empty")
-        if not self.workflow:
-            raise ValueError("Workflow cannot be empty")
-
     @property
     def name(self):
         if self.dir == '.':
