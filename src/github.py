@@ -157,7 +157,7 @@ class GitHub:
 
     def invoke_workflow_dispatch(self, event_type, inputs):
         if len(inputs.keys()) > 10:
-            raise TooManyDispatchKeysError("Too many keys in the dispatch payload"
+            raise TooManyDispatchKeysError("Too many keys in the dispatch payload")
 
         url = f"https://api.github.com/repos/{self.org}/{self.repo}/dispatches"
         resp = requests.post(
