@@ -1,0 +1,59 @@
+name: Terraform Apply - Production
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+  pull-requests: read
+  deployments: write
+
+on:
+  repository_dispatch:
+    types: [tf_apply]
+
+concurrency:
+  group: tacosbot-${{ github.event.client_payload.name }}-apply
+  cancel-in-progress: false
+
+
+jobs:
+  apply_terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare to Apply
+        id: prepare
+        uses: TheTacosBot/orchestrator/.github/actions/apply_preparation@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          project_name: ${{ github.event.client_payload.project_name }}
+
+      # Steps below are configurable by the user
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::809929912595:role/TacosBotRole
+          role-session-name: tacobot
+          aws-region: us-west-2
+      - name: Terraform Init
+        run: |
+          cd ${{ steps.prepare.outputs.dir }}
+          terraform init
+      - name: Select Terraform Workspace
+        run: |
+          cd ${{ steps.prepare.outputs.dir }}
+          terraform workspace select production || terraform workspace new production
+      - name: Terraform Apply
+        id: apply_terraform
+        run: |
+          cd ${{ steps.prepare.outputs.dir }}
+          terraform apply -no-color -auto-approve plan | tee $GITHUB_STEP_SUMMARY
+      # End of configurable steps
+
+      # All steps below should be run
+      - name: Set Deployment Status
+        uses: TheTacosBot/orchestrator/.github/actions/update_deployment_status@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          deployment_id: ${{ steps.prepare.outputs.deployment_id }}
+          status: success
+          environment: ${{ steps.prepare.outputs.project_name }}
