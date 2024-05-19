@@ -22,3 +22,4 @@ def before_scenario(context, scenario):
 def after_scenario(context, scenario):
     os.environ['INPUT_GITHUB_TOKEN'] = ''
     os.environ['INPUT_DRIFT_DETECTION'] = ''
+    os.environ['INPUT_CONFIG_FILE'] = ''

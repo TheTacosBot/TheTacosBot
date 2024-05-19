@@ -9,7 +9,7 @@ Feature: TacosBot GitHub Actions Handling
 
     Scenario Outline: Handling pull request events
         Given a "<event_type>" event for pull request
-        When the TacosBot processes the pull request
+        When the TacosBot processes the event
         Then the "<expected_workflow>" is triggered for projects affected by the changes
 
         Examples:
@@ -24,7 +24,13 @@ Feature: TacosBot GitHub Actions Handling
         When a pull request is opened
         Then TacosBot doesn't trigger jobs
     
+    Scenario: project locked by the same pull request
+        Given a project is planned for the existing pull request
+        When the pull request is updated
+        Then the "plan" is triggered for projects affected by the changes
+
+    
     Scenario: project locks are deleted when pull request is closed
         Given a "closed" event for pull request
-        When the TacosBot processes the pull request
+        When the TacosBot processes the event
         Then TacosBot deletes the locks for the project

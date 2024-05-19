@@ -47,6 +47,7 @@ def comment_handler(config):
 
     args = comment_parser(comment)
 
+    # TODO: need to verify the comment is on the same PR that has the lock
     if args.command == 'apply':
         (project, workflow) = args.project.split(":")
         logger.info(f"Applying changes to project: {args.project}")
@@ -54,6 +55,7 @@ def comment_handler(config):
     elif args.command == 'unlock':
         logger.info(f"Unlocking project: {args.project}")
         (deployment, _) = github.project_has_pending_deployment(args.project)
+        print(f"deployment: {deployment}")
         github.delete_deployment(deployment_id=deployment)
     elif args.command == 'plan':
         logger.info(f"Planning changes for project: {args.project}")

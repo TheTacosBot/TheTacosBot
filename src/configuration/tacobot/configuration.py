@@ -31,10 +31,8 @@ class Config:
         matching_project = None
         dir, workflow = project_name.split(':')
 
-        print(f"Search for matching project: {project_name} with workspace: {workflow} in dir: {dir}")
+        logger.debug(f"Search for matching project: {project_name} with workspace: {workflow} in dir: {dir}")
         for project in self.projects:
-            print(f"Checking project: {project.name}")
-            print(f"Project dir: {project.dir}")
             if re.compile(f'^{project.dir}$').match(dir) and project.workflow == workflow:
                 matching_project = copy.deepcopy(project)
                 matching_project.dir = dir
