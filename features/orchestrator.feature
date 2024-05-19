@@ -8,7 +8,7 @@ Feature: TacosBot GitHub Actions Handling
 
     Scenario Outline: Handling pull request events
         When an engineer <event_type> a pull request
-        Then the "<expected_workflow>" is triggered for projects affected by the changes
+        Then TacosBot creates 1 plan
 
         Examples:
             | event_type  | expected_workflow |

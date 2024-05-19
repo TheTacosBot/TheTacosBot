@@ -40,8 +40,6 @@ class GitHub:
     def pull_request_number(self):
         if 'pull_request' in self.event:
             return self.event['pull_request']['number']
-        elif 'issue' in self.event:
-            return self.event['issue']['number']
 
     @property
     def head_branch(self):

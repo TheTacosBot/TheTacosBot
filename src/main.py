@@ -8,7 +8,7 @@ from src.custom_exceptions import *
 def validate_inputs():
     if 'INPUT_GITHUB_TOKEN' not in os.environ or not os.environ['INPUT_GITHUB_TOKEN']:
         raise GitHubTokenNotFoundError()
-    if 'INPUT_CONFIG_FILE' not in os.environ:
+    if 'INPUT_CONFIG_FILE' not in os.environ or not os.environ['INPUT_CONFIG_FILE']:
         raise ConfigurationError("No configuration file specified")
 
     event = os.environ.get("GITHUB_EVENT_NAME")
