@@ -4,12 +4,10 @@ Feature: TacosBot GitHub Actions Handling
     So that I can manage Terraform infrastructure effectively through GitHub comments and pull requests
 
     Background:
-        Given the GitHub token is available
-        And a configuration file at features/.tacosbot.yaml
+        Given a configuration file at features/.tacosbot.yaml
 
     Scenario Outline: Handling pull request events
-        Given a "<event_type>" event for pull request
-        When the TacosBot processes the event
+        When an engineer <event_type> a pull request
         Then the "<expected_workflow>" is triggered for projects affected by the changes
 
         Examples:
@@ -31,6 +29,5 @@ Feature: TacosBot GitHub Actions Handling
 
     
     Scenario: project locks are deleted when pull request is closed
-        Given a "closed" event for pull request
-        When the TacosBot processes the event
+        When an engineer closed a pull request
         Then TacosBot deletes the locks for the project

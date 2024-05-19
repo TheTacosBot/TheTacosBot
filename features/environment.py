@@ -2,6 +2,9 @@ import requests_mock
 import os
 
 def before_scenario(context, scenario):
+    os.environ['INPUT_GITHUB_TOKEN'] = 'fake_token'
+    os.environ['GITHUB_EVENT_PATH'] = "features/example_events/pull_request.json"
+
     context.m = requests_mock.Mocker()
 
     context.m.post("https://api.github.com/repos/Codertocat/Hello-World/dispatches")

@@ -1,8 +1,7 @@
 Feature: TacosBot responds and handles Pull Request Comments
 
     Background:
-        Given the GitHub token is available
-        And a configuration file at features/.tacosbot.yaml
+        Given a configuration file at features/.tacosbot.yaml
 
     Scenario Outline: Handling comments to trigger workflows
         Given a comment "<comment>" on the pull request

@@ -7,10 +7,10 @@ from src.main import run
 from src.configuration.tacobot.configuration import Config
 from src.configuration.tacobot.project import Project
 
-@given('the GitHub token is available')
+@given('the GitHub token is missing')
 def step_impl(context):
-    os.environ['INPUT_GITHUB_TOKEN'] = 'fake_token'
-    os.environ['GITHUB_EVENT_PATH'] = "features/example_events/pull_request.json"
+    os.environ['INPUT_GITHUB_TOKEN'] = ''
+    os.environ['GITHUB_EVENT_PATH'] = ''
 
 @given('a configuration file with projects')
 def step_impl(context):
@@ -31,13 +31,19 @@ def step_impl(context):
 def step_impl(context):
     context.m.get('https://api.github.com/repos/Codertocat/Hello-World/deployments?environment=examples/gh_dir0:tacosbot_production', json=[{'id': '1234', 'payload': {'pr_number': 2}}])
     
-@given('a "{event_type}" event for pull request')
+    
+@when('an engineer {event_type} a pull request')
 def step_impl(context, event_type):
     context.event_type = event_type
     if event_type == "closed":
         os.environ['GITHUB_EVENT_PATH'] = "features/example_events/pull_request_closed.json"
     os.environ['GITHUB_EVENT_NAME'] = "pull_request"
 
+    with context.m:
+        try:
+            run()
+        except Exception as e:
+            context.exception = e
 @when('the pull request is updated')
 def step_impl(context):
     with context.m:
