@@ -3,7 +3,7 @@ import requests
 import json
 from dataclasses import asdict
 from src.logger import logger
-from src.custom_exceptions import TooManyDispatchKeysError
+from src.custom_exceptions import TooManyDispatchKeysError, TriggerWorkflowError
 
 token_cache = {}
 
@@ -163,9 +163,11 @@ class GitHub:
             }
         )
 
-        if resp.status_code >= 400:
-            print(resp.json())
-        resp.raise_for_status()
+        try:
+            resp.raise_for_status()
+        except Exception as e:
+            logger.error(f"Failed to trigger the workflow: {e}")
+            raise TriggerWorkflowError(f"Failed to trigger the workflow: {e}")
 
     def get_pr_information(self):
         resp = requests.get(

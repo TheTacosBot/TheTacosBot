@@ -1,3 +1,4 @@
+@error
 Feature: Tacosbot handles errors gracefully
     Background:
         Given a configuration file with projects
@@ -18,8 +19,13 @@ Feature: Tacosbot handles errors gracefully
         When an engineer opened a pull request
         Then an error should be raised indicating "No such file"
 
-    @wip
     Scenario: no configuration file provided to GitHub Action
         Given no configuration file is specified
         When an engineer opened a pull request
         Then an error should be raised indicating "No configuration file specified"
+
+    Scenario: unable to trigger a plan
+        Given the GitHub API is down
+        And a configuration file at features/.tacosbot.yaml
+        When an engineer opened a pull request
+        Then an error should be raised indicating "Failed to trigger the workflow"

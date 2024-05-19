@@ -81,11 +81,29 @@ def step_impl(context, number):
         assert 'sha' in request['client_payload'], request
     assert len(context.dispatched_events.request_history) == int(number), context.m.request_history
 
+@then('TacosBot performs {number} apply')
+@then('TacosBot performs {number} applies')
+def step_impl(context, number):
+    for i in range(int(number)):
+        request = context.dispatched_events.request_history[i].json()
+        assert 'event_type' in request, "event_type not in request"
+        assert 'apply' in request['event_type'], "plan not in request"
+        assert 'client_payload' in request, "client_payload not in request"
+        assert 'project_name' in request['client_payload'], "project_name not in request"
+    assert len(context.dispatched_events.request_history) == int(number), context.m.request_history
+
 @when('an engineer triggers a plan via comment')
 def step_impl(context):
     os.environ['GITHUB_EVENT_NAME'] = "issue_comment"
     os.environ['INPUT_COMMENT'] = "tacosbot plan --project examples/gh_dir0:tacosbot_production"
     context.run()
+
+@when('an engineer triggers an apply via comment')
+def step_impl(context):
+    os.environ['GITHUB_EVENT_NAME'] = "issue_comment"
+    os.environ['INPUT_COMMENT'] = "tacosbot apply --project examples/gh_dir0:tacosbot_production"
+    context.run()
+
 @given('a comment "{comment}" on the pull request')
 def step_impl(context, comment):
     os.environ['INPUT_COMMENT'] = comment
