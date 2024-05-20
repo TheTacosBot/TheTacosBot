@@ -1,6 +1,6 @@
 ## Introduction
 
-TheTacosBot is a GitHub Action based automation tool designed to manage Terraform operations directly within GitHub. Inspired by Atlantis, it allows teams to orchestrate Terraform workflows using GitHub comments and pull request events, streamlining infrastructure as code (IaC) operations without leaving GitHub.
+TheTacosBot is a GitHub Action based automation tool designed to manage Terraform operations directly within GitHub. Inspired by Atlantis, it allows teams to orchestrate Terraform workflows using GitHub comments and pull request events, streamlining Infrastructure as Code (IaC) operations without leaving GitHub.
 
 ### Features
 
@@ -51,7 +51,7 @@ jobs:
 
 #### Step 2: Create Configuration File
 
-Create a .tacosbot.yaml in the root of your repository with the following content to define the projects and workflows:
+Create a `.tacosbot.yml` in the root of your repository with the following content to define the projects and workflows:
 
 ```yaml
 projects:
@@ -83,21 +83,33 @@ Once set up, TheTacosBot will listen to pull request and issue comment events:
     <summary>
       How do I customize workflow triggers?
     </summary>
-      Edit the on: section of your .github/workflows/tacobot.yml file to trigger workflows based on different GitHub events such as pushes, merges, or manual dispatches.
+      <ul>
+        <li>
+          Edit the <code>on:</code> section of your <code>.github/workflows/tacosbot.yml</code> file to trigger workflows based on different GitHub events such as pushes, merges, or manual dispatches.
+        </li>
+      </ul>
 </details>
 
 <details>
     <summary>
     What if my Terraform configurations are in multiple directories?
     </summary>
-    You can specify multiple project entries in .tacosbot.yaml, each with its own directory and workflow.
+      <ul>
+        <li>
+          You can specify multiple project entries in .tacosbot.yaml, each with its own directory and workflow.
+        </li>
+      </ul>
 </details>
 
 <details>
     <summary>
       Can TheTacosBot handle multiple environments like staging and production?
     </summary>
-      Yes, you can configure multiple workflows within .tacosbot.yaml to handle different environments.
+      <ul>
+        <li>
+          Yes, you can configure multiple workflows within <code>.github/workflows/tacosbot.yml</code> to handle different environments.
+        </li>
+      </ul>
 </details>
 
 ### License
