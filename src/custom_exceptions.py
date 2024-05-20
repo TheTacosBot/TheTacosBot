@@ -41,3 +41,8 @@ class TriggerWorkflowError(Exception):
     def __init__(self, message="Failed to trigger the workflow"):
         self.message = message
         super().__init__(self.message)
+
+class RetrieveChangedFilesError(Exception):
+    def __init__(self, message="Failed to retrieve changed files from the pull request"):
+        self.message = message
+        super().__init__(self.message)

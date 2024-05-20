@@ -25,11 +25,7 @@ def pull_request_handler(config: Config):
         github.clear_deployments()
         return
 
-    try:
-        files_changed = github.pull_request_files_changed()
-    except Exception as e:
-        print(f"Failed to retrieve files changed due to: {e}")
-        raise e
+    files_changed = github.pull_request_files_changed()
 
     projects_to_run = config.get_projects_to_run(files_changed)
     logger.debug(f"Projects to run: {projects_to_run}")

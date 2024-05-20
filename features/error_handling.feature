@@ -25,7 +25,13 @@ Feature: Tacosbot handles errors gracefully
         Then an error should be raised indicating "No configuration file specified"
 
     Scenario: unable to trigger a plan
-        Given the GitHub API is down
+        Given the GitHub dispatch API is down
         And a configuration file at features/.tacosbot.yaml
         When an engineer opened a pull request
         Then an error should be raised indicating "Failed to trigger the workflow"
+
+    Scenario: unable to retrieve fils changed in pull request
+        Given the GitHub files changed API is down
+        And a configuration file at features/.tacosbot.yaml
+        When an engineer opened a pull request
+        Then an error should be raised indicating "Failed to retrieve changed files"

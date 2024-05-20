@@ -3,7 +3,7 @@ import requests
 import json
 from dataclasses import asdict
 from src.logger import logger
-from src.custom_exceptions import TooManyDispatchKeysError, TriggerWorkflowError
+from src.custom_exceptions import TooManyDispatchKeysError, TriggerWorkflowError, RetrieveChangedFilesError
 
 token_cache = {}
 
@@ -45,24 +45,26 @@ class GitHub:
     def head_branch(self):
         return self.event['pull_request']['head']['ref']
 
-    def pull_request_files_changed(self, drift_detection=False):
-        if drift_detection is False:
-            resp = requests.get(
-                f"https://api.github.com/repos/{self.org}/{self.repo}/pulls/{self.pull_request_number}/files?per_page=100",
-                headers=self.request_header)
+    def pull_request_files_changed(self):
+        resp = requests.get(
+            f"https://api.github.com/repos/{self.org}/{self.repo}/pulls/{self.pull_request_number}/files?per_page=100",
+            headers=self.request_header)
 
+        try:
             resp.raise_for_status()
+        except Exception as e:
+            raise RetrieveChangedFilesError(f"Failed to retrieve changed files: {e}")
 
-            files_changed = resp.json()
+        files_changed = resp.json()
 
-            while 'next' in resp.links.keys():  # pragma: no cover
-                resp = requests.get(
-                    resp.links['next']['url'],
-                    headers=self.request_header)
-                files_changed.extend(resp.json())
+        while 'next' in resp.links.keys():  # pragma: no cover
+            resp = requests.get(
+                resp.links['next']['url'],
+                headers=self.request_header)
+            files_changed.extend(resp.json())
 
-            file_names = [f['filename'] for f in files_changed]
-            return file_names
+        file_names = [f['filename'] for f in files_changed]
+        return file_names
 
     def create_locked_status_check(self, context, pr_number):
         resp = requests.post(
