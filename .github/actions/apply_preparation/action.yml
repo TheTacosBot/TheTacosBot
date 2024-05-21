@@ -1,0 +1,73 @@
+name: 'TacosBot Apply Preperation'
+description: 'Run this action before you run your Terraform Apply'
+inputs:
+  comment:
+    description: 'The comment that triggered the action'
+    required: false
+  project_name:
+    description: 'The name of the project'
+    required: false
+  github_token:
+    description: 'GitHub Token'
+    required: true
+outputs:
+  dir:
+    description: "The directory to apply Terraform"
+    value: ${{ steps.get_deployment_info.outputs.dir }}
+  deployment_id:
+    description: "The ID of the deployment"
+    value: ${{ steps.get_deployment_info.outputs.deployment_id }}
+  project_name:
+    description: Name of the TacosBot Project
+    value: ${{ steps.get_deployment_info.outputs.project_name}}
+  pull_request_number: 
+    description: The PR number
+    value: ${{ steps.get_deployment_info.outputs.pr_number }}
+runs:
+  using: "composite"
+  steps:
+    - name: Extract project name
+      shell: bash
+      id: get_project_name_from_comment
+      run: |
+        if [ "${{ inputs.comment }}" ]; then
+          COMMENT="${{ inputs.comment }}"
+          PROJECT_NAME=$(echo "$COMMENT" | sed -n 's/.*--project \([^ ]*\).*/\1/p')
+          echo "project_name::$PROJECT_NAME" >> $GITHUB_OUTPUT
+          echo "No comment provided"
+          exit 1
+        else
+          echo "project_name=${{ inputs.project_name }}" >> $GITHUB_OUTPUT
+        fi
+    - name: Authenticate GitHub CLI
+      shell: bash
+      run: |
+        echo "${{ inputs.github_token }}" | gh auth login --with-token
+    - name: Retrieve GitHub Deployment for Workspace
+      id: get_deployment_info
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: |
+        python retrieve_deployment_info.py \
+          --repository ${{ github.repository }} \
+          --project-name ${{ steps.get_project_name_from_comment.outputs.project_name }} \
+          --github-token ${{ inputs.github_token }}
+
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ steps.get_deployment_info.outputs.sha }}
+    - name: Download artifact
+      id: download-artifact
+      uses: dawidd6/action-download-artifact@v3
+      with:
+        pr: ${{ steps.get_deployment_info.outputs.pr_number }}
+        workflow: ${{ steps.get_deployment_info.outputs.workflow }}_plan.yaml
+        name: ${{ steps.get_deployment_info.outputs.plan_path }}
+        path: ${{ steps.get_deployment_info.outputs.dir }}
+        github_token: ${{ inputs.github_token }}
+    - name: Rename plan
+      shell: bash
+      working-directory: ${{ steps.get_deployment_info.outputs.dir }}
+      run: |
+        mv ${{ steps.get_deployment_info.outputs.plan_path}} plan

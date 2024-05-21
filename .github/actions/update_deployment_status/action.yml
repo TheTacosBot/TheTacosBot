@@ -1,0 +1,34 @@
+name: 'Update deployment status'
+description: 'Updates deployment status'
+inputs:
+  deployment_id:
+    description: 'The deployment ID'
+    required: true
+  environment:
+    description: 'The environment to deploy to'
+    required: true
+  status:
+    description: 'The status of the deployment'
+    required: true
+    default: 'success'  # Can be one of error, failure, inactive, in_progress, queued pending, or success
+  github_token:
+    description: 'GitHub Token'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Set deployment status
+      shell: bash
+      run: |
+        echo "I am here"
+        echo "${{ inputs.environment }}"
+        echo "${{ inputs.status }}"
+        echo "${{ inputs.deployment_id}}"
+        echo "${{ inputs.github_token }}" | gh auth login --with-token
+        STATE="success"  # Can be one of error, failure, inactive, in_progress, queued pending, or success
+        gh api -X POST /repos/${{ github.repository }}/deployments/${{ inputs.deployment_id }}/statuses \
+          -f state="$STATE" \
+          -f log_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+          -f description="Deployment $STATE" \
+          -f environment="${{ inputs.environment }}"
+        echo "Deployment status set to $STATE"

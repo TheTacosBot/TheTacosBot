@@ -1,0 +1,34 @@
+name: TacoBot
+
+permissions:
+  contents: write # Needed to create repository dispatch event
+  pull-requests: read
+  actions: write
+  deployments: write
+  statuses: write
+  issues: read
+
+on:
+  pull_request:
+    types: [opened, synchronize, edited, closed]
+  issue_comment:                                     
+    types: [created]
+
+env:
+  config_file: .tacosbot.yaml
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            ${{ env.config_file }}
+          sparse-checkout-cone-mode: false
+      - name: Run TacoBot
+        uses: TheTacosBot/TheTacosBot@main
+        with:
+          config_file: ${{ env.config_file }}
+          github_token: ${{ github.token }}

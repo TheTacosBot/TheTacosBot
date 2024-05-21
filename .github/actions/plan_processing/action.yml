@@ -1,0 +1,64 @@
+name: 'TacosBot Plan Processing'
+description: 'Run this action after you have created a Terraform Plan'
+inputs:
+  name:
+    description: 'Name of the TacoBot Project'
+    required: true
+  dir:
+    description: 'The working directory'
+    required: true
+  terraform_plan:
+    description: 'The Terraform Plan'
+    required: true
+  terraform_output:
+    description: 'Name of the plan file'
+    required: true
+  github_token:
+    description: 'GitHub Token'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Create Job Summary
+      working-directory: ${{ inputs.dir }}
+      shell: bash
+      run: |
+          sed -i 's/\x1b\[[0-9;]*m//g' ${{ inputs.terraform_output }}
+          echo "### Terraform Plan" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`hcl" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "$(cat ${{ inputs.terraform_output }})" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+          echo "$GITHUB_STEP_SUMMARY"
+    - name: Save Plan
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.terraform_plan }}
+        path: |
+          ${{ inputs.dir }}/${{ inputs.terraform_plan}}
+    - name: Authenticate GitHub CLI
+      shell: bash
+      run: |
+        echo "${{ inputs.github_token }}" | gh auth login --with-token
+    - name: Get Current Job Log URL
+      uses: Tiryoh/gha-jobid-action@v1
+      id: job_id
+      with:
+        github_token: ${{ inputs.github_token }}
+        job_name: plan_terraform
+    - name: Create status check
+      shell: bash
+      working-directory: ${{ inputs.dir }}
+      run: |
+        SUMMARY=$(cat ${{ inputs.terraform_output }} | grep 'Plan:.*')
+        POST_BODY='{
+          "state": "success",
+          "target_url": "${{ steps.job_id.outputs.html_url }}?check_suite_focus=true#step:6:1",
+          "description": "'$SUMMARY'",
+          "context": "${{ inputs.name }}"
+        }'
+
+        gh api repos/${{ github.repository }}/statuses/${{ github.sha }} --input - <<< "$POST_BODY"
+
