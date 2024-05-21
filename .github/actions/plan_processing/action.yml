@@ -60,5 +60,5 @@ runs:
           "context": "${{ inputs.name }}"
         }'
 
-        gh api repos/${{ github.repository }}/statuses/${{ github.sha }} --input - <<< "$POST_BODY"
+        gh api repos/${{ github.repository }}/statuses/${{ github.event.client_payload.sha }} --input - <<< "$POST_BODY"
 
