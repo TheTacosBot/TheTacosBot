@@ -84,10 +84,11 @@ class GitHub:
             f'https://api.github.com/repos/{self.org}/{self.repo}/deployments',
             headers=self.request_header,
             json={
+                'task': 'plan',
                 'ref': self.head_branch if head_branch is None else head_branch,
                 'environment': project.name,
                 'description': f'Terraform for {project.name}',
-                'auto_merge': False,
+                'auto_merge': os.getenv('AUTO_MERGE', 'false') == 'true',
                 'required_contexts': [],
                 'payload': {
                     'project': asdict(project),

@@ -39,11 +39,7 @@ def pull_request_handler(config: Config):
             logger.info(f"Project {project.name} is locked. Skipping.")
             continue
     
-        inputs = {
-            'name': project.name,
-            'sha': github.sha,
-            **asdict(project),
-        }
+
 
         # We use github deployments to keep track of projects that are "locked"
         # or in the process of being planned. Here we create the deployment
@@ -52,6 +48,12 @@ def pull_request_handler(config: Config):
         deployment_id = github.create_deployment(project)
         github.update_deployment_status(deployment_id, 'pending', f'Creating deployment for {project.name}')
 
+        inputs = {
+            'name': project.name,
+            'sha': github.sha,
+            'deployment_id': deployment_id,
+            **asdict(project),
+        }
         # Invoke the github action workflow for this project.
         logger.info(f"Invoking {project.workflow} for project: {project.name}")
         github.invoke_workflow_dispatch(f'{project.workflow}_plan', inputs)
