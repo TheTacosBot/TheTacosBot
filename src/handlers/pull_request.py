@@ -54,6 +54,7 @@ def pull_request_handler(config: Config):
             'deployment_id': deployment_id,
             **asdict(project),
         }
+        print(inputs)
         # Invoke the github action workflow for this project.
         logger.info(f"Invoking {project.workflow} for project: {project.name}")
         github.invoke_workflow_dispatch(f'{project.workflow}_plan', inputs)

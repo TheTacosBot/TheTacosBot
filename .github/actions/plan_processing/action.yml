@@ -50,7 +50,7 @@ runs:
         SUMMARY=$(cat ${{ inputs.terraform_output }} | grep 'Plan:.*')
         POST_BODY='{
           "state": "success",
-          "target_url": "https://github.com/${{ github.repository }}/runs/${{ github.run_id }}",
+          "target_url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
           "description": "'$SUMMARY'",
           "context": "${{ inputs.name }}"
         }'
