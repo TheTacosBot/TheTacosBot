@@ -33,6 +33,7 @@ runs:
 
           echo "$GITHUB_STEP_SUMMARY"
     - name: Save Plan
+      id: save_plan
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.terraform_plan }}
@@ -57,7 +58,8 @@ runs:
         gh api repos/${{ github.repository }}/statuses/${{ github.event.client_payload.sha }} --input - <<< "$POST_BODY"
         DEPLOYMENT_BODY='{
           "state": "success",
-          "description": "'$SUMMARY'"
+          "description": "'$SUMMARY'",
+          "log_url": "https://github.com/${{ github.repository }}/runs/${{ github.run_id}}/artifacts/${{ steps.saved_plan.outputs.artifact-id}}"
         }'
         gh api repos/${{ github.repository }}/deployments/${{ github.event.client_payload.deployment_id }}/statuses --input - <<< "$DEPLOYMENT_BODY"
 
