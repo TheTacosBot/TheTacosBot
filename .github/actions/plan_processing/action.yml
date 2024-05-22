@@ -59,7 +59,7 @@ runs:
         DEPLOYMENT_BODY='{
           "state": "success",
           "description": "'$SUMMARY'",
-          "log_url": "https://github.com/${{ github.repository }}/runs/${{ github.run_id}}/artifacts/${{ steps.saved_plan.outputs.artifact-id}}"
+          "log_url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}/artifacts/${{ steps.save_plan.outputs.artifact-id}}"
         }'
         gh api repos/${{ github.repository }}/deployments/${{ github.event.client_payload.deployment_id }}/statuses --input - <<< "$DEPLOYMENT_BODY"
 
