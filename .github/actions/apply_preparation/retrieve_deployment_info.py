@@ -83,6 +83,7 @@ if 'GITHUB_OUTPUT' in os.environ:
         print(f'sha={deployment_info.get("sha")}', file=fh)
         print(f'pr_number={deployment_info.get("pr_number")}', file=fh)
         print(f'project_name={deployment_info.get("project_name")}', file=fh)
+        print(f'artifact_url={artifact_url}', file=fh)
 
         # Flattens the project dictionary into key-value pairs
         # and writes them to the output file

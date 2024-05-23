@@ -59,14 +59,8 @@ runs:
         ref: ${{ steps.get_deployment_info.outputs.sha }}
     - name: Download artifact
       id: download-artifact
-      uses: dawidd6/action-download-artifact@v3
-      with:
-        workflow_search: true
-        name: ${{ steps.get_deployment_info.outputs.plan_path }}
-        path: ${{ steps.get_deployment_info.outputs.dir }}
-        github_token: ${{ inputs.github_token }}
-    - name: Rename plan
       shell: bash
-      working-directory: ${{ steps.get_deployment_info.outputs.dir }}
       run: |
+        curl -sSL -o -H 'Authorization: Bearer ${{ inputs.github_token }}' plan.zip ${{ steps.get_deployment_info.outputs.plan_url }}
+        unzip plan.zip -d ${{ steps.get_deployment_info.outputs.dir }}
         mv ${{ steps.get_deployment_info.outputs.plan_path}} plan
