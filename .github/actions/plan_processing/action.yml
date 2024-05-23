@@ -33,6 +33,7 @@ runs:
 
           echo "$GITHUB_STEP_SUMMARY"
     - name: Save Plan
+      id: save_plan
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.terraform_plan }}
@@ -42,12 +43,6 @@ runs:
       shell: bash
       run: |
         echo "${{ inputs.github_token }}" | gh auth login --with-token
-    - name: Get Current Job Log URL
-      uses: Tiryoh/gha-jobid-action@v1
-      id: job_id
-      with:
-        github_token: ${{ inputs.github_token }}
-        job_name: plan_terraform
     - name: Create status check
       shell: bash
       working-directory: ${{ inputs.dir }}
@@ -55,10 +50,16 @@ runs:
         SUMMARY=$(cat ${{ inputs.terraform_output }} | grep 'Plan:.*')
         POST_BODY='{
           "state": "success",
-          "target_url": "${{ steps.job_id.outputs.html_url }}?check_suite_focus=true#step:6:1",
+          "target_url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
           "description": "'$SUMMARY'",
           "context": "${{ inputs.name }}"
         }'
 
-        gh api repos/${{ github.repository }}/statuses/${{ github.sha }} --input - <<< "$POST_BODY"
+        gh api repos/${{ github.repository }}/statuses/${{ github.event.client_payload.sha }} --input - <<< "$POST_BODY"
+        DEPLOYMENT_BODY='{
+          "state": "success",
+          "description": "'$SUMMARY'",
+          "log_url": "https://api.github.com/repos/TheTacosBot/demo/actions/artifacts/${{ steps.save_plan.outputs.artifact-id }}/zip"
+        }'
+        gh api repos/${{ github.repository }}/deployments/${{ github.event.client_payload.deployment_id }}/statuses --input - <<< "$DEPLOYMENT_BODY"
 

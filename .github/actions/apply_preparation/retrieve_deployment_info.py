@@ -15,9 +15,6 @@ def make_github_request(url, github_token):
         'Authorization': f'Bearer {github_token}',
     }
 
-    # Resource URL (for example, fetching user data for a specific username)
-    resource = f"/repos/{repository}/deployments?environment={environment}"
-
     # Send a GET request
     conn.request("GET", url, headers=headers)
 
@@ -52,39 +49,41 @@ args = parser.parse_args()
 repository = args.repository
 environment = args.project_name
 
-deployments = make_github_request(f"/repos/{repository}/deployments?environment={environment}", args.github_token)
+deployments = make_github_request(f"/repos/{repository}/deployments?environment={environment}&task=plan", args.github_token)
 
 
-first_deployment_without_success_status = None
+first_deployment_with_success_status = None
+deployment_has_success_status = False
+artifact_url = None
 for deployment in deployments:
     deployment_status = make_github_request(deployment['statuses_url'], args.github_token)
 
-    # A deployment has an array of statuses, we need to check if any of them are successful
-    # We do not want to return successful deployments as they have already been applied
-    deployment_has_success_status = False
+    # We want to return the first deployment with task plan that has been successful
     for status in deployment_status:
         assert 'state' in status, 'State not found in deployment status'
         if status['state'] == 'success':
             deployment_has_success_status = True
+            artifact_url = status.get('log_url')
             break
     
-    if not deployment_has_success_status:
-        first_deployment_without_success_status = deployment
+    if deployment_has_success_status:
+        first_deployment_with_success_status = deployment
         break
 
-if first_deployment_without_success_status == None:
+if first_deployment_with_success_status == None:
     raise Exception("Could not find any deployments that have not already been applied")
 
-assert 'payload' in first_deployment_without_success_status, 'Payload not found in deployment'
+assert 'payload' in first_deployment_with_success_status, 'Payload not found in deployment'
 
-deployment_info = first_deployment_without_success_status['payload']
+deployment_info = first_deployment_with_success_status['payload']
 
 if 'GITHUB_OUTPUT' in os.environ:
     with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-        print(f'deployment_id={first_deployment_without_success_status.get("id")}', file=fh)
+        print(f'deployment_id={first_deployment_with_success_status.get("id")}', file=fh)
         print(f'sha={deployment_info.get("sha")}', file=fh)
         print(f'pr_number={deployment_info.get("pr_number")}', file=fh)
         print(f'project_name={deployment_info.get("project_name")}', file=fh)
+        print(f'artifact_url={artifact_url}', file=fh)
 
         # Flattens the project dictionary into key-value pairs
         # and writes them to the output file
