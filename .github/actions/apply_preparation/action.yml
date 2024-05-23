@@ -61,6 +61,6 @@ runs:
       id: download-artifact
       shell: bash
       run: |
-        curl -sSL -o -H 'Authorization: Bearer ${{ inputs.github_token }}' plan.zip ${{ steps.get_deployment_info.outputs.plan_url }}
+        curl -sSL -o plan.zip -H 'Authorization: Bearer ${{ inputs.github_token }}' ${{ steps.get_deployment_info.outputs.artifact_url }}
         unzip plan.zip -d ${{ steps.get_deployment_info.outputs.dir }}
         mv ${{ steps.get_deployment_info.outputs.plan_path}} plan
